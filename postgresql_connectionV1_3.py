@@ -229,20 +229,24 @@ def update_table_combined_inventory_history():
    print(f"importing file > {filename_combined}")
    create_table_from_csv('onhand_ingredients_history',filename_combined)
 
-def show_info(command_text, columns):
+def show_info(table, command_text, columns):
    #command_text example: "select part_number, location, expiration, qty from onhand_ingredients"
    #columns could be like this: ['part_number','location','expiration','qty']
    window = tk.Tk()
    frame = tk.Frame(window)
    frame.pack(fill='both', expand=True)
 
-   command_text = "select part_number, location, expiration, qty from onhand_ingredients"
+   command_text = "select part_number, location, expiration, qty from " + table
    df = postgresql_to_dataframe(conn, command_text, columns)
 
    pt = Table(frame, dataframe=df)
    pt.show()
 
+
 #connect_db()
+#folder = 'D:/shared_inventory/server files/'
+#create_table_from_csv_replace('picking_data', folder + 'picking_data.csv')
+
 
 #************** MAIN APP ******************
 
@@ -259,9 +263,12 @@ sql_command = '''CREATE TABLE EMPLOYEE(
 
 """
 
+
 window = tk.Tk()
 frame = tk.Frame(window)
 frame.pack(fill='both', expand=True)
+
+
 #select_command(sql_command)
 
 #select_command("select column_name from information_schema.columns where table_name = 'onhand_ingredients'")
