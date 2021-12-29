@@ -214,7 +214,7 @@ def postgresql_to_dataframe(conn, select_query, column_names):
    return df
 
 #return Column names
-def table_column_names(table_name):
+def show_table_column_names(table_name):
    command = "SELECT column_name FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '" + table_name + "'"
    columns = select_command(command)
    return columns
@@ -236,7 +236,7 @@ def show_info(table, command_text, columns):
    frame = tk.Frame(window)
    frame.pack(fill='both', expand=True)
 
-   command_text = "select part_number, location, expiration, qty from " + table
+   #command_text = "select * from " + table
    df = postgresql_to_dataframe(conn, command_text, columns)
 
    pt = Table(frame, dataframe=df)
@@ -251,7 +251,7 @@ def show_info(table, command_text, columns):
 #************** MAIN APP ******************
 
 update_table_combined_inventory()
-
+show_table_column_names('picking_data')
 """
 sql_command = '''CREATE TABLE EMPLOYEE(
       FIRST_NAME CHAR(20) NOT NULL,

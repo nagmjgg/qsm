@@ -21,6 +21,7 @@ import psycopg2
 import glob    #func last_filename
 from functions import *
 from datetime import *
+from tkcalendar import Calendar
 
 pd.set_option('display.max_rows', None)
 pd.set_option('display.max_columns', None)
@@ -256,7 +257,7 @@ rows = cursor.fetchall()
 update(rows)
 
 pick_id_job = StringVar()
-modified = StringVar()
+modified_job = StringVar()
 creation_date_job = StringVar()
 delivery_date_job = StringVar()
 time_job = StringVar()
@@ -408,7 +409,7 @@ update_btn.grid(row=5, column=1, padx=5, pady=3, sticky=W)
 delete_btn.grid(row=5, column=2, padx=5, pady=3, sticky=W)
 pick_btn.grid(row=5, column=3, padx=5, pady=3, sticky=W)
 
-
+search()
 """
 style = Style(master)
 style.configure("TRadiobutton", background = "light green",
