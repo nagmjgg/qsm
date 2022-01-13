@@ -13,6 +13,7 @@ from tkinter import *
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
+from tkcalendar import DateEntry    #https://pypi.org/project/tkcalendar/
 import datetime
 import os
 import pandas as pd
@@ -20,7 +21,9 @@ from pandastable import Table
 import psycopg2
 import glob    #func last_filename
 from functions import *
+from sql_functions import select_command
 from datetime import *
+from tkcalendar import Calendar
 
 pd.set_option('display.max_rows', None)
 pd.set_option('display.max_columns', None)
@@ -69,15 +72,6 @@ def getrow(event):
     expiration_sel.set(item['values'][6])  #expiration
 
 def update_element():
-    '''
-    index_sel = StringVar()
-    part_number_sel = StringVar()
-    description_sel = StringVar()
-    location_sel = StringVar()
-    qty_sel = StringVar()
-    lot_sel = StringVar()
-    expiration_sel = StringVar()
-'''
     index = index_sel.get()
     part_number = part_number_sel.get()
     description = description_sel.get()
@@ -104,7 +98,8 @@ def add_new_element():
     lot = lot_sel.get()
     expiration = expiration_sel.get()
 
-    query = "insert into onhand_ingredients (index, part_number, description_x, location, qty, lot, expiration) values(%s, %s, %s, %s, %s, %s)"
+    query = "insert into onhand_ingredients (index, part_number, description_x, location, qty, lot, expiration) " \
+            "values(%s, %s, %s, %s, %s, %s)"
     cursor.execute(query, (index, part_number, description, location, qty, lot, expiration))
     conn.commit()
     clear()
@@ -124,26 +119,32 @@ def update(rows):
     for i in rows:
         trv.insert('','end', values=i)
 
+def update_picking(rows):
+    trv_pick.delete(*trv_pick.get_children())
+    for i in rows:
+        trv_pick.insert('','end', values=i)
+
 def search():
     q2 = q.get()
-    query = "select index, part_number, description_x, location, qty, lot, expiration from onhand_ingredients where part_number like '%"+q2.upper()+"%' or description_x like '%"+q2+"%'"
+    query = "select index, part_number, description_x, location, qty, lot, expiration from onhand_ingredients " \
+            "where part_number like '%"+q2.upper()+"%' or description_x like '%"+q2+"%'"
     cursor.execute(query)
     rows = cursor.fetchall()
     update(rows)
 
-def pick_element():
-
-    query = "select max(index) from picking_data"
-    cursor.execute(query)
-    max_id = cursor.fetchone()
-
-    date = date_now()
-    time = time_now()
-
+def search_picking():
     pick_id = pick_id_job.get()
-    modified =  date_now()
+    query = "select pick_id, part_number, part_description, location, qty, part_lot, expiration from picking_data " \
+            "where pick_id = '" +pick_id + "'"
+    cursor.execute(query)
+    rows = cursor.fetchall()
+    update_picking(rows)
+
+
+def pick_element():
+    pick_id = pick_id_job.get()
     creation_date = creation_date_job.get()
-    delivery_date = delivery_date_lbl_job.get()
+    delivery_date = delivery_date_job.get()
     time = time_job.get()
     job_number = job_number_job.get()
     product_name = product_name_job.get()
@@ -152,30 +153,34 @@ def pick_element():
     delivered_flag = delivered_flag_job.get()
     moved_flag = moved_flag_job.get()
     returned_flag = returned_flag_job.get()
-    returned_date = returned_date_job.get()
+    return_date = returned_date_job.get()
     comments = comments_job.get()
-    part_number = t2_sel_data.get()
-    part_description = t3_sel_data.get()
-    location = t4_sel_data.get()
-    qty = t5_sel_data.get()
+    part_number = part_number_sel.get()
+    part_description = description_sel.get()
+    location = location_sel.get()
+    qty = qty_sel.get()
     #unit = t8_sel_data.get()
     #amount_each = t9_sel_data.get()
-    part_lot = t6_sel_data.get()
-    part_expiration = t7_sel_data.get()
+    part_lot = lot_sel.get()
+    part_expiration = expiration_sel.get()
 
-    creation_date = actual_date()
+
+
 
     query = "insert into picking_data (pick_id, creation_date, deliver_date, time, job_number, " \
             "product_name, received_by, delivered_by, delivered_flag, moved_flag, " \
-            "returned_flag, comments, location, part_number, " \
-            "part_description, part_lot, expiration, qty) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s,  %s, %s,  %s, %s, %s, %s, %s, %s)"
+            "returned_flag, return_date, comments, location, part_number, " \
+            "part_description, part_lot, expiration, qty) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s,  %s, %s,  %s, %s, %s, %s, %s, %s, %s)"
 
-    cursor.execute(query,(pick_id, creation_date, deliver_date, time, job_number, product_name, received_by,
-                          delivered_by, delivered_flag, moved_flag,  returned_flag, comments, location, part_number,
-                          part_description, part_lot, part_expiration, qty))
+    cursor.execute(query,(pick_id, creation_date, delivery_date, time, job_number, product_name, received_by,
+                          delivered_by, delivered_flag, moved_flag,  returned_flag, return_date, comments, location,
+                          part_number, part_description, part_lot, part_expiration, qty))
     conn.commit()
     clear()
+    search_picking()
 
+
+#************** Root ***************
 
 root = Tk()
 
@@ -225,7 +230,9 @@ rows = cursor.fetchall()
 update(rows)
 
 
-# Tree View: Picking 
+#******************  Tree View: Picking ***************
+#******************************************************
+
 trv_pick = ttk.Treeview(wrapper4, columns=(1,2,3,4,5,6,7), show="headings", height="8")
 verscrlbar = ttk.Scrollbar(wrapper4, orient="vertical", command=trv_pick.yview)
 verscrlbar.pack(side="right", fill="y")
@@ -240,7 +247,7 @@ trv_pick.column(6,width=200)
 trv_pick.column(7,width=100)
 trv_pick.pack()
 #index, 'part_number','location','expiration','qty', 'lot'
-trv_pick.heading(1, text="index")
+trv_pick.heading(1, text="pick_id")
 trv_pick.heading(2, text="part_number")
 trv_pick.heading(3, text="Description")
 trv_pick.heading(4, text="Location")
@@ -248,15 +255,8 @@ trv_pick.heading(5, text="Qty")
 trv_pick.heading(6, text="Lot")
 trv_pick.heading(7, text="Expiration")
 
-
-trv_pick.bind('<Double 1>', getrow)
-query = "select pick_id, location, part_number, part_description, part_lot, expiration, qty from picking_data" # where pick_id = '" + pick_id + "'"
-cursor.execute(query)
-rows = cursor.fetchall()
-update(rows)
-
 pick_id_job = StringVar()
-modified = StringVar()
+modified_job = StringVar()
 creation_date_job = StringVar()
 delivery_date_job = StringVar()
 time_job = StringVar()
@@ -265,59 +265,87 @@ product_name_job = StringVar()
 received_by_job = StringVar()
 delivered_by_job = StringVar()
 delivered_flag_job = StringVar()
-comments_job = IntVar()
+comments_job = StringVar()
 moved_flag_job = IntVar()
 returned_flag_job = IntVar()
 returned_date_job = StringVar()
 
-#job data section
+query = '''SELECT max(pick_id) from picking_data'''
+
+
+query0 = "select pick_id from picking_data order by pick_id desc limit 1"
+cursor.execute(query0)
+
+result = cursor.fetchone()[0]
+pick_id_new = result + 1
+
+
+trv_pick.bind('<Double 1>', getrow)
+query = "select pick_id, location, part_number, part_description, part_lot, expiration, qty from picking_data where pick_id = '" + str(pick_id_new) + "'"
+cursor.execute(query)
+rows = cursor.fetchall()
+update_picking(rows)
+
+
+#*************** Job data section *******************
+#****************************************************
+
+
 pick_id_lbl_job = Label(wrapper0, text="Pick_id")
 pick_id_lbl_job.grid(row=0, column=0, padx=PADX, pady=PADY)
 pick_id_ent_job = Entry(wrapper0, textvariable=pick_id_job)
 pick_id_ent_job.grid(row=1, column=0, padx=PADX, pady=PADY, sticky=W)
+pick_id_ent_job.insert(END,pick_id_new)
 
 creation_date_lbl_job = Label(wrapper0, text="Creation_date")
 creation_date_lbl_job.grid(row=0, column=1, padx=PADX, pady=PADY)
-creation_date_ent_job = Entry(wrapper0, textvariable=creation_date_job)
+#creation_date_ent_job = Entry(wrapper0, textvariable=creation_date_job)
+creation_date_ent_job = DateEntry(wrapper0, selectmode='day', textvariable=creation_date_job)
 creation_date_ent_job.grid(row=1, column=1, padx=PADX, pady=PADY, sticky=W)
 
-delivery_date_lbl_job = Label(wrapper0, text="Delivery_date")
-delivery_date_lbl_job.grid(row=0, column=2, padx=PADX, pady=PADY)
-delivery_date_ent_job = Entry(wrapper0, textvariable=delivery_date_job)
-delivery_date_ent_job.grid(row=1, column=2, padx=PADX, pady=PADY, sticky=W)
 
 time_lbl_job = Label(wrapper0, text="Time")
-time_lbl_job.grid(row=0, column=3, padx=PADX, pady=PADY)
+time_lbl_job.grid(row=0, column=2, padx=PADX, pady=PADY)
 time_ent_job = Entry(wrapper0, textvariable=time_job)
-time_ent_job.grid(row=1, column=3, padx=PADX, pady=PADY, sticky=W)
+time_ent_job.grid(row=1, column=2, padx=PADX, pady=PADY, sticky=W)
+time_ent_job.insert(END, time_now())
+
 
 job_number_lbl_job = Label(wrapper0, text="Job Number")
-job_number_lbl_job.grid(row=0, column=4, padx=PADX, pady=PADY)
+job_number_lbl_job.grid(row=0, column=3, padx=PADX, pady=PADY)
 job_number_ent_job = Entry(wrapper0, textvariable=job_number_job)
-job_number_ent_job.grid(row=1, column=4, padx=PADX, pady=PADY, sticky=W)
+job_number_ent_job.grid(row=1, column=3, padx=PADX, pady=PADY, sticky=W)
 
 product_name_lbl_job = Label(wrapper0, text="Product Name")
-product_name_lbl_job.grid(row=0, column=5, padx=PADX, pady=PADY)
+product_name_lbl_job.grid(row=0, column=4, padx=PADX, pady=PADY)
 product_name_ent_job = Entry(wrapper0, textvariable=product_name_job)
-product_name_ent_job.grid(row=1, column=5, padx=PADX, pady=PADY, ipadx=100)
+product_name_ent_job.grid(row=1, column=4, padx=PADX, pady=PADY, ipadx=100)
 
 received_by_lbl_job = Label(wrapper0, text="Received by")
-received_by_lbl_job.grid(row=3, column=4, padx=PADX, pady=PADY)
+received_by_lbl_job.grid(row=3, column=3, padx=PADX, pady=PADY)
 received_by_ent_job = Entry(wrapper0, textvariable=received_by_job)
-received_by_ent_job.grid(row=3, column=5, padx=PADX, pady=PADY, ipadx=100)
+received_by_ent_job.grid(row=3, column=4, padx=PADX, pady=PADY, ipadx=100)
 
 delivered_by_lbl_job = Label(wrapper0, text="Delivered by")
-delivered_by_lbl_job.grid(row=4, column=4, padx=PADX, pady=PADY)
+delivered_by_lbl_job.grid(row=4, column=3, padx=PADX, pady=PADY)
 delivered_by_ent_job = Entry(wrapper0, textvariable=delivered_by_job)
-delivered_by_ent_job.grid(row=4, column=5, padx=PADX, pady=PADY, ipadx=100)
+delivered_by_ent_job.grid(row=4, column=4, padx=PADX, pady=PADY, ipadx=100)
 
 comments_lbl_job = Label(wrapper0, text="Comments")
-comments_lbl_job.grid(row=5, column=4, padx=PADX, pady=PADY)
+comments_lbl_job.grid(row=5, column=3, padx=PADX, pady=PADY)
 comments_ent_job = Entry(wrapper0, textvariable=comments_job)
-comments_ent_job.grid(row=5, column=5, padx=PADX, pady=PADY, ipadx=100)
+comments_ent_job.grid(row=5, column=4, padx=PADX, pady=PADY, ipadx=100)
 
 delivered_flag_ent_job = Checkbutton(wrapper0, text="Delivered ?", variable=delivered_flag_job)
 delivered_flag_ent_job.grid(row=3, column=0, padx=PADX, pady=PADY, sticky=W)
+
+delivery_date_lbl_job = Label(wrapper0, text="Delivery_date")
+delivery_date_lbl_job.grid(row=3, column=1, padx=PADX, pady=PADY)
+#delivery_date_ent_job = Entry(wrapper0, textvariable=delivery_date_job)
+delivery_date_ent_job = DateEntry(wrapper0, selectmode='day', textvariable=delivery_date_job)
+delivery_date_ent_job.grid(row=3, column=2, padx=PADX, pady=PADY, sticky=W)
+delivery_date_ent_job.delete(0,END)
+
 
 moved_flag_ent_job = Checkbutton(wrapper0, text="Moved in FB ?", variable=moved_flag_job)
 moved_flag_ent_job.grid(row=4, column=0, padx=PADX, pady=PADY, sticky=W)
@@ -327,11 +355,14 @@ returned_flag_ent_job.grid(row=5, column=0, padx=PADX, pady=PADY, sticky=W)
 
 return_date_lbl_job = Label(wrapper0, text="Return date")
 return_date_lbl_job.grid(row=5, column=1, padx=PADX, pady=PADY)
-return_date_ent_job = Entry(wrapper0, textvariable=returned_date_job)
+return_date_ent_job = DateEntry(wrapper0, selectmode='day', textvariable=returned_date_job)
 return_date_ent_job.grid(row=5, column=2, padx=PADX, pady=PADY)
+return_date_ent_job.delete(0,END)
 
 
-#search section
+#******************** Search section ********************
+#********************************************************
+
 q = StringVar()
 
 search_lbl = Label(wrapper2, text="Search")
@@ -344,16 +375,9 @@ clear_btn = Button(wrapper2, text="Clear", command=clear)
 clear_btn.pack(side=tk.LEFT, padx=PADX)
 
 
-#user data selection
-"""
-    index = t1.get()
-    part_number = t2.get()
-    description = t3.get()
-    location = t4.get()
-    qty = t5.get()
-    lot = t6.get()
-    expiration = t7.get()
-"""
+#******************* Data selection ******************
+#**********************************************************
+
 index_sel = StringVar()
 part_number_sel = StringVar()
 description_sel = StringVar()
@@ -408,31 +432,8 @@ update_btn.grid(row=5, column=1, padx=5, pady=3, sticky=W)
 delete_btn.grid(row=5, column=2, padx=5, pady=3, sticky=W)
 pick_btn.grid(row=5, column=3, padx=5, pady=3, sticky=W)
 
+search()
 
-"""
-style = Style(master)
-style.configure("TRadiobutton", background = "light green",
-                foreground = "red", font = ("arial", 10, "bold"))
-"""
-
-"""
-trv.bind('<Double 1>', getrow)
-
-query = "select ..."
-cursor.execute(query)
-rows = cursor.fetchall()
-update(rows)
-
-#search selection
-lbl = Label(wrapper2, text="search")
-lbl.pack(side=tk.LEFT, padx=10)
-ent = Entry(wrapper2, textvariable=q)
-ent.pack(side=tk.LEFT, padx=6)
-btn = Button(wrapper2, text="search", command=search)
-ent.pack(side=tk.LEFT, padx=6)
-cbtn = Button(wrapper2, text="clear", command=clear)
-cbtn.pack(side=tk.LEFT, padx=6)
-"""
 root.title("QSM Picking")
 root.geometry("1080x720")
 root.mainloop()

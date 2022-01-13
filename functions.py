@@ -2,10 +2,11 @@ import pandas as pd
 from tkinter import *
 import tkinter as tk
 import time
-from datetime import date
+from datetime import date,datetime
 import glob
 import os
 import math
+from tkcalendar import Calendar
 
 
 def find_last_file(folder, initials):  # folder: 'D:/shared_inventory/server files/', initials: 'available'
@@ -17,8 +18,7 @@ def find_last_file(folder, initials):  # folder: 'D:/shared_inventory/server fil
 
 
 def actual_date():
-    date_initial_file = date.today().strftime(
-        "%Y-%m-%d")  # fecha actual ... colocar formato... date.strftime("%d/%m/%y")
+    date_initial_file = date.today().strftime("%Y-%m-%d")  # fecha actual ... colocar formato... date.strftime("%d/%m/%y")
     date_final_file = date.today()  # fecha actual ... colocar formato... date.strftime("%d/%m/%y")
     print(f" Actual date {date}")  # 2021-08-10
     return str(date_final_file)
@@ -45,3 +45,38 @@ def extract_text_to_new_column(dataframe, old_column, new_column, text_to_find,
             else:
                 pass
 
+def date_now():
+    date = datetime.now().strftime("%Y-%m-%d")
+    return date
+
+def time_now():
+    time = datetime.now().strftime("%H:%M")
+    return time
+
+def sel_date():
+    # Create Object
+    root = Tk()
+
+    # Set geometry
+    root.geometry("400x400")
+
+    # Add Calendar
+    cal = Calendar(root, selectmode='day',
+                   year=2020, month=5,
+                   day=22)
+
+    cal.pack(pady=20)
+
+    def grad_date():
+        date.config(text="Selected Date is: " + cal.get_date())
+
+    # Add Button and Label
+    Button(root, text="Get Date",
+           command=grad_date).pack(pady=20)
+
+    date = Label(root, text="")
+    date.pack(pady=20)
+
+    date.config(text="Selected Date is: " + cal.get_date())
+
+    root.mainloop()

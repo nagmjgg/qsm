@@ -144,7 +144,7 @@ def create_table(sql_command):
 #https://stackoverflow.com/questions/2987433/how-to-import-csv-file-data-into-a-postgresql-table """
 def create_table_from_csv(table_name, csv_filename):
 
-   df = pd.read_csv(csv_filename)
+   df = pd.read_csv(csv_filename, encoding='latin_1')
    df.columns = [c.lower() for c in df.columns]  # postgres doesn't like capitals or spaces
 
    from sqlalchemy import create_engine
@@ -214,7 +214,7 @@ def postgresql_to_dataframe(conn, select_query, column_names):
    return df
 
 #return Column names
-def table_column_names(table_name):
+def show_table_column_names(table_name):
    command = "SELECT column_name FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '" + table_name + "'"
    columns = select_command(command)
    return columns
@@ -236,7 +236,7 @@ def show_info(table, command_text, columns):
    frame = tk.Frame(window)
    frame.pack(fill='both', expand=True)
 
-   command_text = "select part_number, location, expiration, qty from " + table
+   #command_text = "select * from " + table
    df = postgresql_to_dataframe(conn, command_text, columns)
 
    pt = Table(frame, dataframe=df)
@@ -245,28 +245,49 @@ def show_info(table, command_text, columns):
 
 #connect_db()
 #folder = 'D:/shared_inventory/server files/'
-#create_table_from_csv_replace('picking_data', folder + 'picking_data.csv')
+#create_table_from_csv('jobs', folder + 'manufacturing_jobs.csv')
+
+#show columns from table
+#show_table_column_names('jobs')
 
 
 #************** MAIN APP ******************
 
-update_table_combined_inventory()
-
+#update_table_combined_inventory()
+#show_table_column_names('picking_data')
 """
-sql_command = '''CREATE TABLE EMPLOYEE(
-      FIRST_NAME CHAR(20) NOT NULL,
-      LAST_NAME CHAR(20),
-      AGE INT,
-      SEX CHAR(1),
-      INCOME FLOAT
+sql_command = '''CREATE TABLE picking_data(
+      index serial COLLATE pg_catalog."default",
+    pick_id text COLLATE pg_catalog."default",
+    creation_date text COLLATE pg_catalog."default",
+    deliver_date text COLLATE pg_catalog."default",
+    "time" text COLLATE pg_catalog."default",
+    job_number text COLLATE pg_catalog."default",
+    product_name text COLLATE pg_catalog."default",
+    received_by text COLLATE pg_catalog."default",
+    delivered_by text COLLATE pg_catalog."default",
+    delivered_flag text COLLATE pg_catalog."default",
+    moved_flag text COLLATE pg_catalog."default",
+    returned_flag text COLLATE pg_catalog."default",
+    return_date text COLLATE pg_catalog."default",
+    comments text COLLATE pg_catalog."default",
+    location text COLLATE pg_catalog."default",
+    part_number text COLLATE pg_catalog."default",
+    part_description text COLLATE pg_catalog."default",
+    part_lot text COLLATE pg_catalog."default",
+    expiration text COLLATE pg_catalog."default",
+    qty text COLLATE pg_catalog."default",
+    unit text COLLATE pg_catalog."default",
+    amount text COLLATE pg_catalog."default",
+    adjust text COLLATE pg_catalog."default",
+    qty_returned text COLLATE pg_catalog."default"
    )'''
 
 """
 
-
-window = tk.Tk()
-frame = tk.Frame(window)
-frame.pack(fill='both', expand=True)
+#window = tk.Tk()
+#frame = tk.Frame(window)
+#frame.pack(fill='both', expand=True)
 
 
 #select_command(sql_command)
@@ -298,6 +319,8 @@ onhand_ingredients columns
 """
 #print(column_names[1])
 
+
+
 #Create table from csv file replacing file
 
 """
@@ -310,7 +333,7 @@ pt = Table(frame, dataframe=df)
 pt.show()
 """
 
-conn.close()
-print(f"Connection closed !")
+#conn.close()
+#print(f"Connection closed !")
 
-window.mainloop()
+#window.mainloop()

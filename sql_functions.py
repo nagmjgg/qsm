@@ -77,12 +77,15 @@ select_command("select column_name from information_schema.columns where table_n
 
 """
 import os
+
 import pandas as pd
 import tkinter as tk
 from pandastable import Table
 import psycopg2
 import glob    #func last_filename
 from tabulate import tabulate
+
+
 
 pd.set_option('display.max_rows', None)
 pd.set_option('display.max_columns', None)
@@ -179,11 +182,11 @@ def select_command(command_text):   # text format : '''SELECT * from EMPLOYEE'''
 
    # Fetching 1st row from the table
    result = cursor.fetchone();
-   print(result)
+   #print(result)
 
    #Fetching 1st row from the table
-   result = cursor.fetchall();
-   print(result)
+   #result = cursor.fetchall();
+   #print(result)
    return result
 
    # Commit your changes in the database
@@ -241,3 +244,4 @@ def show_info(command_text, columns):
 
    pt = Table(frame, dataframe=df)
    pt.show()
+
