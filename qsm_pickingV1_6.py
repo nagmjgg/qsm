@@ -10,6 +10,7 @@ Programa con marcos  y formulario con consulta a base de datos
 https://pythonguides.com/python-tkinter-grid/
 
 """
+import subprocess
 
 import psycopg2
 from tkinter import *
@@ -134,6 +135,12 @@ def search_picking():
     rows = cursor.fetchall()
     update_picking(rows)
 
+def new_picking_job():
+    update_picking()
+
+def add_job_name():
+    pass
+
 
 def pick_element():
     pick_id = pick_id_job.get()
@@ -172,6 +179,9 @@ def pick_element():
     conn.commit()
     clear()
     search_picking()
+
+def modify_job():
+    subprocess.call("qsm_modify_jobs V1.py", shell=True)
 
 
 #************** Root ***************
@@ -354,6 +364,14 @@ return_date_ent_job = DateEntry(wrapper0, selectmode='day', textvariable=returne
 return_date_ent_job.grid(row=5, column=2, padx=PADX, pady=PADY)
 return_date_ent_job.delete(0,END)
 
+new_pick_job_btn = Button(wrapper0, text="New Picking Job")
+new_pick_job_btn.grid(row=3, column=7, padx=PADX, pady=PADY, sticky=W)
+
+add_job_name_btn = Button(wrapper0, text="Add Job Name")
+add_job_name_btn.grid(row=4, column=7, padx=PADX, pady=PADY, sticky=W)
+
+modify_job_btn = Button(wrapper0, text="Modify Job", command=modify_job)
+modify_job_btn.grid(row=5, column=7, padx=PADX, pady=PADY, sticky=W)
 
 #******************** Search section ********************
 #********************************************************
@@ -429,7 +447,7 @@ pick_btn.grid(row=5, column=3, padx=5, pady=3, sticky=W)
 
 search()
 
-root.title("QSM Picking")
+root.title("ModiPicking")
 root.geometry("1080x720")
 root.mainloop()
 

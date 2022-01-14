@@ -61,13 +61,13 @@ schedule.every().day.at("11:10").do(qsm_merge)
 schedule.every().day.at("14:10").do(qsm_merge)
 
 # Every day at 7am or 00:00 time bedtime() is called.
-schedule.every().day.at("07:10").do(update_table_combined_inventory())
+schedule.every().day.at("07:10").do(update_table_combined_inventory)
 
 # Every day at 11 am or 00:00 time bedtime() is called.
-schedule.every().day.at("11:10").do(update_table_combined_inventory())
+schedule.every().day.at("11:10").do(update_table_combined_inventory)
 
 # Every day at 2 pm or 00:00 time bedtime() is called.
-schedule.every().day.at("14:10").do(update_table_combined_inventory())
+schedule.every().day.at("14:10").do(update_table_combined_inventory)
 
 
 # After every 5 to 10mins in between run work()
