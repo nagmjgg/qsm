@@ -9,6 +9,8 @@ Programa con marcos  y formulario con consulta a base de datos
 #grids
 https://pythonguides.com/python-tkinter-grid/
 
+using Database norms
+
 """
 import subprocess
 

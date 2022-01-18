@@ -9,7 +9,7 @@ import time
 # Schedule Library imported
 import subprocess
 import schedule
-#import logging
+import logging
 from qsm_functions import *
 from postgresql_connectionV1_3 import update_table_combined_inventory
 
@@ -21,6 +21,12 @@ logging.info('So should this')
 logging.warning('And this, too')
 logging.error('And non-ASCII stuff, too, like Øresund and Malmö')
 """
+folder = 'D:/shared_inventory/server files/'
+
+root_logger = logging.getLogger()
+root_logger.setLevel(logging.DEBUG)
+handler = logging.FileHandler(folder + 'qsm_logfile.log', 'w', 'utf-8')
+root_logger.addHandler(handler)
 
 # Functions setup
 def qsm_merge():
