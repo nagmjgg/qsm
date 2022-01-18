@@ -245,7 +245,7 @@ ent.pack(side=tk.LEFT, padx=6)
 cbtn = Button(wrapper2, text="clear", command=clear)
 cbtn.pack(side=tk.LEFT, padx=6)
 """
-root.title("QSM Modify Elements")
+root.title("QSM Modify Picking Data")
 root.geometry("1080x720")
 root.mainloop()
 
