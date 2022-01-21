@@ -207,11 +207,11 @@ wrapper2 = LabelFrame(root, text="Search")
 wrapper3 = LabelFrame(root, text="Selection")
 wrapper4 = LabelFrame(root, text="Pick")
 
-wrapper0.pack(fill="both", expand="yes", padx=3, pady=3)
-wrapper1.pack(fill="both", expand="yes", padx=3, pady=3)
-wrapper2.pack(fill="both", expand="yes", padx=3, pady=3)
-wrapper3.pack(fill="both", expand="yes", padx=3, pady=3)
-wrapper4.pack(fill="both", expand="yes", padx=3, pady=3)
+wrapper0.pack(fill="both", expand="yes", padx=PADX, pady=3)
+wrapper1.pack(fill="both", expand="yes", padx=PADX, pady=3)
+wrapper2.pack(fill="both", expand="yes", padx=PADX, pady=3)
+wrapper3.pack(fill="both", expand="yes", padx=PADX, pady=3)
+wrapper4.pack(fill="both", expand="yes", padx=PADX, pady=3)
 
 
 trv = ttk.Treeview(wrapper1, columns=(1,2,3,4,5,6,7), show="headings", height="4")
@@ -450,14 +450,14 @@ add_btn = Button(wrapper3, text="Add New", command=add_new_element)
 delete_btn = Button(wrapper3, text="Delete", command=delete_element)
 pick_btn = Button(wrapper3, text="Pick", command=pick_element)
 
-add_btn.grid(row=5, column=0, padx=5, pady=3, sticky=W)
-update_btn.grid(row=5, column=1, padx=5, pady=3, sticky=W)
-delete_btn.grid(row=5, column=2, padx=5, pady=3, sticky=W)
-pick_btn.grid(row=5, column=3, padx=5, pady=3, sticky=W)
+add_btn.grid(row=5, column=0, padx=5, pady=PADY, sticky=W)
+update_btn.grid(row=5, column=1, padx=5, pady=PADY, sticky=W)
+delete_btn.grid(row=5, column=2, padx=5, pady=PADY, sticky=W)
+pick_btn.grid(row=5, column=3, padx=5, pady=PADY, sticky=W)
 
 search()
 
-root.title("ModiPicking")
+root.title("Picking")
 root.geometry("1080x720")
 root.mainloop()
 
