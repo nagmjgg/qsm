@@ -218,8 +218,12 @@ trv = ttk.Treeview(wrapper1, columns=(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16), s
 verscrlbar = ttk.Scrollbar(wrapper1, orient="vertical", command=trv.yview)
 verscrlbar.pack(side="right", fill="y")
 
+trv['yscrollcommand'] = verscrlbar.set
+
 horscrlbar = ttk.Scrollbar(wrapper1, orient="horizontal", command=trv.xview)
 horscrlbar.pack(side="bottom", fill="x")
+
+trv['xscrollcommand'] = horscrlbar.set
 
 #columns width
 trv.column(1,width=50 )

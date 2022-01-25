@@ -60,8 +60,8 @@ conn = psycopg2.connect(database=db_name, user=username, password=user_password,
 #Creating a cursor object using the cursor() method
 cursor = conn.cursor()
 
-columns_name_font = ('Arial',12,'bold') # normal or bold
-wrape_title_font = ('Arial',14,'bold') # normal or bold
+font_columns_name = ('Arial',10,'bold') # normal or bold
+font_wrap_title = ('Arial',12,'bold') # normal or bold
 
 def clear():
     query = "select index, part_number, description_x, location, qty, lot, expiration from onhand_ingredients"
@@ -195,13 +195,15 @@ def pick_element():
     search_picking()
 
 def modify_picking_data():
-    subprocess.call("qsm_modify_pick V1.py", shell=True)
+    subprocess.call("qsm_modify_picking_dataV1.py", shell=True)
 
 def modify_jobs_data():
     subprocess.call("qsm_modify_jobs V1.py", shell=True)
 
 def query_to_dataframe(conn, query, column_names):
    """
+   turn query data to dataframe so it can be used for combobox or vlookup functions
+
    #df = postgresql_to_dataframe(conn, "select * from MonthlyTemp", column_names)
    #column_names = ["id", "source", "datetime", "mean_temp"]
 
@@ -225,18 +227,19 @@ def query_to_dataframe(conn, query, column_names):
    df = df.drop_duplicates()
    return df
 
-#************** Root ***************
+#************************************<<<< ROOT >>>>***********************************************
+#*************************************************************************************************
 
 root = Tk()
 
 PADX = 2
 PADY = 2
 
-wrapper0 = LabelFrame(root, text="Job Data", font=wrape_title_font)
-wrapper1 = LabelFrame(root, text="Database")
-wrapper2 = LabelFrame(root, text="Search")
-wrapper3 = LabelFrame(root, text="Selection")
-wrapper4 = LabelFrame(root, text="Pick")
+wrapper0 = LabelFrame(root, text="Job Data", font=font_wrap_title)
+wrapper1 = LabelFrame(root, text="Database", font=font_wrap_title)
+wrapper2 = LabelFrame(root, text="Search", font=font_wrap_title)
+wrapper3 = LabelFrame(root, text="Selection", font=font_wrap_title)
+wrapper4 = LabelFrame(root, text="Pick", font=font_wrap_title)
 
 wrapper0.pack(fill="both", expand="yes", padx=3, pady=3)
 wrapper1.pack(fill="both", expand="yes", padx=3, pady=3)
@@ -356,17 +359,21 @@ time_ent_job = Entry(wrapper0, textvariable=time_job)
 time_ent_job.grid(row=1, column=2, padx=PADX, pady=PADY, sticky=W)
 time_ent_job.insert(END, time_now())
 
-def new_job_name():
+def new_job_name(event=None):
     global auto_job_name
-    df = query_to_dataframe(conn, "select mfg_status from jobs", ['mfg_status'])
-    auto_job_name = df['mfg_status'][0]
-    print(auto_job_name)
-    product_name_ent_job.insert(END, auto_job_name)
-
+    query = "select mfg_status from jobs where lot = '" + job_number_job.get() + "'"
+    df = query_to_dataframe(conn, query, ['mfg_status'])
+    if df['mfg_status'][0] is not None:
+        auto_job_name = df['mfg_status'][0]
+        product_name_ent_job.delete(0,END)
+        product_name_ent_job.insert(END, auto_job_name)
+    else:
+        pass
 job_number_lbl_job = Label(wrapper0, text="Job Number")
 job_number_lbl_job.grid(row=0, column=3, padx=PADX, pady=PADY)
 job_number_ent_job = Entry(wrapper0, textvariable=job_number_job, validate='focusout', validatecommand=new_job_name)
 job_number_ent_job.grid(row=1, column=3, padx=PADX, pady=PADY, sticky=W)
+job_number_ent_job.bind('<Return>',new_job_name)
 
 product_name_lbl_job = Label(wrapper0, text="Product Name")
 product_name_lbl_job.grid(row=0, column=4, padx=PADX, pady=PADY)
@@ -430,6 +437,7 @@ search_lbl = Label(wrapper2, text="Search")
 search_lbl.pack(side=tk.LEFT, padx=PADX)
 search_ent = Entry(wrapper2, textvariable=q)
 search_ent.pack(side=tk.LEFT, padx=PADX)
+search_ent.bind('<Return>',lambda: search)
 search_btn = Button(wrapper2, text="Search", command=search)
 search_btn.pack(side=tk.LEFT, padx=PADX)
 clear_btn = Button(wrapper2, text="Clear", command=clear)
