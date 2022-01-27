@@ -247,16 +247,19 @@ def show_info(table, command_text, columns):
 
 #loading info from csv file to d
 
-def load_info_from_csv(csv_file, dest_table, separator):
+def append_info_from_csv_to_table(csv_file, dest_table, separator, columns_):
    with open(csv_file, 'r') as f:
        # Notice that we don't need the `csv` module.
        next(f) # Skip the header row.
+
+       # set the columns order according to the csv file
+       # ['part_index','part_number','part_name','part_unit']
        cursor.copy_from(f, dest_table, sep=separator, columns=['part_index','part_number','part_name','part_unit'])
 
    conn.commit()
 
-
-#load_info_from_csv( folder + "elements_qsm.csv","parts",";")
+#load information from csv file to a table
+append_info_from_csv_to_table( folder + "elements_qsm.csv","parts",";", ['part_index','part_number','part_name','part_unit'])
 
 """
 root = Tk()
