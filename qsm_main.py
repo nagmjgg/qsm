@@ -22,4 +22,6 @@ helpmenu.add_command(label="About...", command=donothing)
 menubar.add_cascade(label="Help", menu=helpmenu)
 
 root.config(menu=menubar)
+root.title("QSM")
+root.geometry("1080x720+50+50")
 root.mainloop()
