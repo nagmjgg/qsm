@@ -39,7 +39,8 @@ conn = psycopg2.connect(database=db_name, user=username, password=user_password,
 cursor = conn.cursor()
 
 def clear():
-    query = "select index, date_deposit_paid, est_compl_date, wo, po, lot, sales_rep, customer, total_count, bottle_fg, cap_tab_specs, product_bg, job_name, mfg_status, packaging_status from jobs"
+    query = "select index, date_deposit_paid, est_compl_date, wo, po, lot, sales_rep, customer, total_count, " \
+            "bottle_fg, code, cap_tab_specs, product_bg, job_name, mfg_status, packaging_status from jobs"
     cursor.execute(query)
     rows = cursor.fetchall()
     update(rows)
@@ -68,32 +69,33 @@ def getrow(event):
 
 def update_element():
 
-    index = index.get()
-    date_deposit_paid = date_deposit_paid.get()
-    est_compl_date = est_compl_date.get()
-    wo = wo.get()
-    po = po.get()
-    lot = lot.get()
-    sales_rep = sales_rep.get()
-    customer = customer.get()
-    total_count = total_count.get()
-    bottle_fg = bottle_fg.get()
-    code = code.get()
-    cap_tab_specs = cap_tab_specs.get()
-    product_bg = product_bg.get()
-    job_name = job_name.get()
-    mfg_status = mfg_status.get()
-    packaging_status = packaging_status.get()
+    index_ = index.get()
+    date_deposit_paid_ = date_deposit_paid.get()
+    est_compl_date_ = est_compl_date.get()
+    wo_ = wo.get()
+    po_ = po.get()
+    lot_ = lot.get()
+    sales_rep_ = sales_rep.get()
+    customer_ = customer.get()
+    total_count_ = total_count.get()
+    bottle_fg_ = bottle_fg.get()
+    code_ = code.get()
+    cap_tab_specs_ = cap_tab_specs.get()
+    product_bg_ = product_bg.get()
+    job_name_ = job_name.get()
+    mfg_status_ = mfg_status.get()
+    packaging_status_ = packaging_status.get()
 
 
 
     if messagebox.askyesno("confirm ?","Are you sure you want to update this element?"):
-        query = "update jobs set index = %s, date_deposit_paid = %s, est_compl_date = %s, wo = %s, " \
+        query = "update jobs set date_deposit_paid = %s, est_compl_date = %s, wo = %s, " \
                 "po = %s, lot = %s, sales_rep = %s, customer = %s, total_count = %s, bottle_fg = %s, code = %s," \
                 "cap_tab_specs = %s, product_bg = %s, job_name = %s, mfg_status = %s, packaging_status = %s " \
                 "where  index = %s"
-        cursor.execute(query, (index, date_deposit_paid, est_compl_date, wo, po, lot, sales_rep, customer, total_count,
-                               bottle_fg, code, cap_tab_specs, product_bg, job_name, mfg_status, packaging_status))
+        cursor.execute(query, (date_deposit_paid_, est_compl_date_, wo_, po_, lot_, sales_rep_, customer_,
+                               total_count_, bottle_fg_, code_, cap_tab_specs_, product_bg_, job_name_, mfg_status_,
+                               packaging_status_, index_))
         conn.commit()
         clear()
     else:
@@ -169,10 +171,16 @@ def update(rows):
 
 def search():
     q2 = search_data.get()
-    query = "select index, date_deposit_paid, est_compl_date, wo, po, lot, sales_rep, customer, total_count, bottle_fg, cap_tab_specs, product_bg, job_name, mfg_status, packaging_status, job_name from jobs where index like '%"+q2+"%' or lot like '%"+q2+"%'"
-    cursor.execute(query)
-    rows = cursor.fetchall()
-    update(rows)
+    if q2 != "":
+        query = "select index, date_deposit_paid, est_compl_date, wo, po, lot, sales_rep, customer, total_count, " \
+                "bottle_fg, cap_tab_specs, product_bg, job_name, mfg_status, packaging_status, job_name from jobs " \
+                "where index = '"+q2+"' or lot like '%"+q2+"%'"
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        update(rows)
+    else:
+        pass
+
 
 
 
@@ -210,26 +218,30 @@ trv = ttk.Treeview(wrapper1, columns=(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16), s
 verscrlbar = ttk.Scrollbar(wrapper1, orient="vertical", command=trv.yview)
 verscrlbar.pack(side="right", fill="y")
 
+trv['yscrollcommand'] = verscrlbar.set
+
 horscrlbar = ttk.Scrollbar(wrapper1, orient="horizontal", command=trv.xview)
 horscrlbar.pack(side="bottom", fill="x")
 
+trv['xscrollcommand'] = horscrlbar.set
+
 #columns width
-trv.column(1,width=50)
+trv.column(1,width=50 )
 trv.column(2,width=80)
-trv.column(3,width=280)
-trv.column(4,width=200)
-trv.column(5,width=100)
-trv.column(6,width=200)
-trv.column(7,width=200)
-trv.column(8,width=200)
-trv.column(9,width=200)
-trv.column(10,width=200)
-trv.column(11,width=200)
-trv.column(12,width=200)
-trv.column(13,width=200)
-trv.column(14,width=200)
-trv.column(15,width=200)
-trv.column(16,width=200)
+trv.column(3,width=80)
+trv.column(4,width=50)
+trv.column(5,width=80)
+trv.column(6,width=80)
+trv.column(7,width=60)
+trv.column(8,width=80)
+trv.column(9,width=70)
+trv.column(10,width=60)
+trv.column(11,width=50)
+trv.column(12,width=60)
+trv.column(13,width=60)
+trv.column(14,width=60)
+trv.column(15,width=120)
+trv.column(16,width=120)
 trv.pack()
 
 
@@ -254,7 +266,7 @@ trv.heading(16, text="packaging status")
 
 trv.bind('<Double 1>', getrow)
 
-query = "select index, date_deposit_paid, est_compl_date, wo, po, lot, sales_rep, customer, total_count, bottle_fg, cap_tab_specs, product_bg, job_name, mfg_status, packaging_status from jobs"
+query = "select index, date_deposit_paid, est_compl_date, wo, po, lot, sales_rep, customer, total_count, bottle_fg, code, cap_tab_specs, product_bg, job_name, mfg_status, packaging_status from jobs"
 cursor.execute(query)
 rows = cursor.fetchall()
 update(rows)
@@ -303,7 +315,7 @@ lot_ent.grid(row=1, column=5, padx=5, pady=3, sticky='w')
 customer_lbl = Label(wrapper3, text="customer")
 customer_lbl.grid(row=0, column=6, padx=5, pady=3)
 customer_ent = Entry(wrapper3, textvariable=customer)
-customer_ent.grid(row=1, column=6, padx=5, pady=3, sticky='w')
+customer_ent.grid(row=1, column=6, padx=5, pady=3, ipadx=60, sticky='w')
 
 sales_rep_lbl = Label(wrapper3, text="sales rep")
 sales_rep_lbl.grid(row=2, column=0, padx=5, pady=3)
@@ -335,32 +347,31 @@ product_bg_lbl.grid(row=2, column=5, padx=5, pady=3)
 product_bg_ent = Entry(wrapper3, textvariable=product_bg)
 product_bg_ent.grid(row=3, column=5, padx=5, pady=3, sticky='w')
 
+job_name_lbl = Label(wrapper3, text="job name")
+job_name_lbl.grid(row=2, column=6, padx=5, pady=3)
+job_name_ent = Entry(wrapper3, textvariable=job_name)
+job_name_ent.grid(row=3, column=6, padx=5, pady=3, ipadx=60, sticky='w')
+
 mfg_status_lbl = Label(wrapper3, text="mfg status")
-mfg_status_lbl.grid(row=2, column=6, padx=5, pady=3)
+mfg_status_lbl.grid(row=4, column=0, padx=5, pady=3)
 mfg_status_ent = Entry(wrapper3, textvariable=mfg_status)
-mfg_status_ent.grid(row=3, column=6, padx=5, pady=3, sticky='w')
+mfg_status_ent.grid(row=5, column=0, padx=5, pady=3, sticky='w')
 
 packaging_status_lbl = Label(wrapper3, text="packaging_status")
-packaging_status_lbl.grid(row=4, column=0, padx=5, pady=3)
+packaging_status_lbl.grid(row=4, column=1, padx=5, pady=3)
 packaging_status_ent = Entry(wrapper3, textvariable=packaging_status)
-packaging_status_ent.grid(row=5, column=0, padx=5, pady=3, sticky='w')
-
-job_name_lbl = Label(wrapper3, text="job name")
-job_name_lbl.grid(row=4, column=1, padx=5, pady=3)
-job_name_ent = Entry(wrapper3, textvariable=job_name)
-job_name_ent.grid(row=5, column=1, padx=5, pady=3, sticky='w')
-
+packaging_status_ent.grid(row=5, column=1, padx=5, pady=3, sticky='w')
 
 up_btn = Button(wrapper3, text="Update", command=update_element)
 add_btn = Button(wrapper3, text="Add New", command=add_new_element)
 delete_btn = Button(wrapper3, text="Delete", command=delete_element)
 
-add_btn.grid(row=5, column=0, padx=5, pady=3)
-up_btn.grid(row=5, column=1, padx=5, pady=3)
-delete_btn.grid(row=5, column=2, padx=5, pady=3)
+add_btn.grid(row=6, column=0, padx=5, pady=3)
+up_btn.grid(row=6, column=1, padx=5, pady=3)
+delete_btn.grid(row=6, column=2, padx=5, pady=3)
 
 
-root.title("QSM Modify Elements")
+root.title("QSM Modify Jobs")
 root.geometry("1080x720")
 root.mainloop()
 

@@ -9,7 +9,7 @@ import time
 # Schedule Library imported
 import subprocess
 import schedule
-#import logging
+import logging
 from qsm_functions import *
 from postgresql_connectionV1_3 import update_table_combined_inventory
 
@@ -21,6 +21,17 @@ logging.info('So should this')
 logging.warning('And this, too')
 logging.error('And non-ASCII stuff, too, like Øresund and Malmö')
 """
+folder = 'D:/shared_inventory/server files/'
+
+root_logger = logging.getLogger()
+root_logger.setLevel(logging.DEBUG)
+handler = logging.FileHandler(folder + 'qsm_logfile.log', 'w', 'utf-8')
+root_logger.addHandler(handler)
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s :: %(levelname)s :: %(message)s')
+formatter = logging.Formatter('%(asctime)s | %(levelname)s | %(message)s',
+                              '%m-%d-%Y %H:%M:%S')
+logging.warning('The Admin just logged out')
 
 # Functions setup
 def qsm_merge():
@@ -30,7 +41,7 @@ def qsm_merge():
 
 def good_luck():
     print("Good Luck for Test")
-
+    logging.warning('The Admin just logged out')
 
 def work():
     print("Study and work hard")
@@ -54,14 +65,23 @@ schedule.every().hour.do(geeks)
 # Every day at 7 am or 00:00 time bedtime() is called.
 schedule.every().day.at("07:10").do(qsm_merge)
 
+# Every day at 9 am or 00:00 time bedtime() is called.
+schedule.every().day.at("09:10").do(qsm_merge)
+
 # Every day at 11 am or 00:00 time bedtime() is called.
 schedule.every().day.at("11:10").do(qsm_merge)
 
 # Every day at 2 pm or 00:00 time bedtime() is called.
 schedule.every().day.at("14:10").do(qsm_merge)
 
+# Every day at 2 pm or 00:00 time bedtime() is called.
+schedule.every().day.at("07:18").do(qsm_merge)
+
 # Every day at 7am or 00:00 time bedtime() is called.
 schedule.every().day.at("07:10").do(update_table_combined_inventory)
+
+# Every day at 9am or 00:00 time bedtime() is called.
+schedule.every().day.at("09:10").do(update_table_combined_inventory)
 
 # Every day at 11 am or 00:00 time bedtime() is called.
 schedule.every().day.at("11:10").do(update_table_combined_inventory)
@@ -69,12 +89,17 @@ schedule.every().day.at("11:10").do(update_table_combined_inventory)
 # Every day at 2 pm or 00:00 time bedtime() is called.
 schedule.every().day.at("14:10").do(update_table_combined_inventory)
 
+# Every day at 7am or 00:00 time bedtime() is called.
+schedule.every().day.at("07:18").do(update_table_combined_inventory)
 
 # After every 5 to 10mins in between run work()
 schedule.every(5).to(10).minutes.do(work)
 
 # Every monday good_luck() is called
 schedule.every().monday.do(good_luck)
+
+# Every monday good_luck() is called - TEST
+schedule.every().day.at("12:30").do(good_luck)
 
 # Every tuesday at 18:00 sudo_placement() is called
 schedule.every().tuesday.at("18:00").do(work)

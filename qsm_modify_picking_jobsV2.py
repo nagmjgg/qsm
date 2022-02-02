@@ -39,7 +39,7 @@ conn = psycopg2.connect(database=db_name, user=username, password=user_password,
 cursor = conn.cursor()
 
 def clear():
-    query = "select pick_id, part_number, part_description, location, qty, part_lot, pick_index from picking_job"
+    query = "select pick_id, creation_date, deliver_date, creation_time, job_number, product_name, received_by, delivered_by, delivered_flag, moved_flag, returned_flag, return_date, comments from picking_job"
     cursor.execute(query)
     rows = cursor.fetchall()
     update(rows)
@@ -53,33 +53,55 @@ def getrow(event):
     t4.set(item['values'][3])
     t5.set(item['values'][4])
     t6.set(item['values'][5])
-
+    t7.set(item['values'][6])
+    t8.set(item['values'][7])
+    t9.set(item['values'][8])
+    t10.set(item['values'][9])
+    t11.set(item['values'][10])
+    t12.set(item['values'][11])
+    t13.set(item['values'][12])
 
 def update_element():
     pick_id = t1.get()
-    part_number = t2.get()
-    description = t3.get()
-    location = t4.get()
-    qty = t5.get()
-    lot = t6.get()
+    creation_date = t2.get()
+    deliver_date = t3.get()
+    creation_time = t4.get()
+    job_number = t5.get()
+    product_name = t6.get()
+    received_by = t7.get()
+    delivered_by = t8.get()
+    delivered_flag = t9.get()
+    moved_flag = t10.get()
+    returned_flag = t11.get()
+    return_date = t12.get()
+    comments = t13.get()
 
     if messagebox.askyesno("confirm ?","Are you sure you want to update this element?"):
-        query = "update picking_data set pick_id = %s, part_number = %s, part_description = %s, location = %s, " \
-                "qty = %s, part_lot = %s where  pick_id = %s"
-        cursor.execute(query, (pick_id, part_number, description, location, qty, lot, pick_id))
+        query = "update pick_id = %s, creation_date = %s, deliver_date = %s, creation_time = %s, job_number = %s, " \
+                "product_name = %s, received_by = %s, delivered_by = %s, delivered_flag = %s, moved_flag = %s, " \
+                "returned_flag = %s, return_date = %s, comments = %s where pick_id = %s"
+        cursor.execute(query, (pick_id, creation_date, deliver_date, creation_time, job_number, product_name,
+                               received_by, delivered_by, delivered_flag, moved_flag, returned_flag, return_date,
+                               comments))
         conn.commit()
         clear()
     else:
         return True
 
 def add_new_element():
-
     pick_id = t1.get()
-    part_number = t2.get()
-    description = t3.get()
-    location = t4.get()
-    qty = t5.get()
-    lot = t6.get()
+    creation_date = t2.get()
+    deliver_date = t3.get()
+    creation_time = t4.get()
+    job_number = t5.get()
+    product_name = t6.get()
+    received_by = t7.get()
+    delivered_by = t8.get()
+    delivered_flag = t9.get()
+    moved_flag = t10.get()
+    returned_flag = t11.get()
+    return_date = t12.get()
+    comments = t13.get()
 
     query2 = "select max(index) from picking_data"
     cursor.execute(query2,(pick_id))
@@ -89,24 +111,20 @@ def add_new_element():
     new_index = int(max_index[0]) + 1
     print(new_index)
 
-    query = "insert into picking_data (pick_id, part_number, part_description, location, qty, part_lot) values(%s, %s, %s, %s, %s, %s)"
-    cursor.execute(query, (new_index, part_number, description, location, qty, part_lot))
+    query = "insert into picking_data (pick_id, creation_date, deliver_date, creation_time, job_number, " \
+            "product_name, received_by, delivered_by, delivered_flag, moved_flag, returned_flag, return_date, " \
+            "comments) values(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+
+    cursor.execute(query, (pick_id, creation_date, deliver_date, creation_time, job_number, product_name,
+                           received_by, delivered_by, delivered_flag, moved_flag, returned_flag, return_date, comments))
     conn.commit()
     clear()
 
 def delete_element():
     pick_id = t1.get()
-    part_number = t2.get()
-    description = t3.get()
-    location = t4.get()
-    qty = t5.get()
-    lot = t6.get()
 
-    ingredient_id = t1.get()
     if messagebox.askyesno("confirm Delete ?","Are you sure you want to delete this element?"):
-        query = "delete from picking_data where pick_id = " + pick_id + " and part_number = '" + part_number + \
-                "' and part_description = '" + description + "' and location = '" + location + "' and qty = '" + qty + "' and part_lot = '" + lot + \
-                "'"
+        query = "delete from picking_data where pick_id = " + pick_id + " and part_number = '" + part_number + "'"
         cursor.execute(query)
         conn.commit()
         clear()
@@ -120,7 +138,9 @@ def update(rows):
 
 def search():
     q2 = q.get()
-    query = "select pick_id, part_number, part_description, location, qty, part_lot from picking_data where part_number like '%"+q2+"%' or part_description like '%"+q2+"%'"
+    query = "select pick_id, creation_date, deliver_date, creation_time, job_number, product_name, received_by, " \
+            "delivered_by, delivered_flag, moved_flag, returned_flag, return_date, comments from picking_job where " \
+            "pick_id = '"+q2.upper()+"' or job_number like '%"+q2+"%'"
     cursor.execute(query)
     rows = cursor.fetchall()
     update(rows)
@@ -135,6 +155,13 @@ t3 = StringVar()
 t4 = StringVar()
 t5 = StringVar()
 t6 = StringVar()
+t7 = StringVar()
+t8 = StringVar()
+t9 = StringVar()
+t10 = StringVar()
+t11 = StringVar()
+t12 = StringVar()
+t13 = StringVar()
 
 wrapper1 = LabelFrame(root, text="Database")
 wrapper2 = LabelFrame(root, text="Search")
@@ -144,10 +171,20 @@ wrapper1.pack(fill="both", expand="yes", padx=10, pady=10)
 wrapper2.pack(fill="both", expand="yes", padx=10, pady=10)
 wrapper3.pack(fill="both", expand="yes", padx=10, pady=10)
 
-trv = ttk.Treeview(wrapper1, columns=(1,2,3,4,5,6), show="headings", height="10")
+trv = ttk.Treeview(wrapper1, columns=(1,2,3,4,5,6,7,8,9,10,11,12,13), show="headings", height="5")
 
 verscrlbar = ttk.Scrollbar(wrapper1, orient="vertical", command=trv.yview)
 verscrlbar.pack(side="right", fill="y")
+trv['yscrollcommand']=verscrlbar.set
+
+
+horscrlbar = ttk.Scrollbar(wrapper1, orient="horizontal", command=trv.xview)
+horscrlbar.pack(side="bottom", fill="x")
+trv['xscrollcommand']=horscrlbar.set
+
+
+fields = ['pick_id', 'creation_date', 'deliver_date', 'creation_time', 'job_number', 'product_name', 'received_by',
+          'delivered_by', 'delivered_flag', 'moved_flag', 'returned_flag', 'return_date', 'comments']
 
 #columns width
 trv.column(1,width=50)
@@ -156,14 +193,30 @@ trv.column(3,width=280)
 trv.column(4,width=200)
 trv.column(5,width=100)
 trv.column(6,width=200)
+trv.column(7,width=50)
+trv.column(8,width=80)
+trv.column(9,width=280)
+trv.column(10,width=200)
+trv.column(11,width=100)
+trv.column(12,width=200)
+trv.column(13,width=200)
 trv.pack()
 #index, 'part_number','location','expiration','qty', 'lot'
 trv.heading(1, text="pick_id")
-trv.heading(2, text="part_number")
-trv.heading(3, text="Description")
-trv.heading(4, text="Location")
-trv.heading(5, text="Qty")
-trv.heading(6, text="Lot")
+trv.heading(2, text="creation_date")
+trv.heading(3, text="deliver_date")
+trv.heading(4, text="creation_time")
+trv.heading(5, text="job_number")
+trv.heading(6, text="product_name")
+trv.heading(7, text="received_by")
+trv.heading(8, text="delivered_by")
+trv.heading(9, text="delivered_flag")
+trv.heading(10, text="moved_flag")
+trv.heading(11, text="returned_flag")
+trv.heading(12, text="return_date")
+trv.heading(13, text="comments")
+
+
 
 trv.bind('<Double 1>', getrow)
 
