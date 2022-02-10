@@ -28,7 +28,7 @@ from pandastable import Table
 import psycopg2
 import glob    #func last_filename
 from functions import *
-from sql_functions import select_command
+#from sql_functions import select_command
 from datetime import *
 from tkcalendar import Calendar
 
@@ -44,7 +44,7 @@ folder = 'D:/shared_inventory/server files/'
 db_name="qsm"
 username='postgres'
 user_password='Quality01'
-db_host='127.0.0.1'
+db_host='localhost'
 db_port= '5432'
 
 #establishing the connection

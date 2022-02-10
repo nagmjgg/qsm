@@ -3,6 +3,8 @@ https://www.geeksforgeeks.org/python-schedule-library/
 https://schedule.readthedocs.io/en/stable/
 
 Remember to install pandas in current
+V3 Logging to mysql implemented
+
 """
 
 import mysql.connector

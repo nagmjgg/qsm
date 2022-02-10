@@ -44,8 +44,8 @@ folder = 'D:/shared_inventory/server files/'
 db_name="qsm"
 username='postgres'
 user_password='Quality01'
-db_host='127.0.0.1'
-db_port= '5432'
+db_host='localhost'
+db_port= '8080'
 
 #establishing the connection
 conn = psycopg2.connect(database=db_name, user=username, password=user_password, host=db_host, port= db_port)
