@@ -11,10 +11,12 @@ https://pythonguides.com/python-tkinter-grid/
 
 using Database norms
 
-"""
-import subprocess
+V2 Start using Mysql database
 
-import psycopg2
+"""
+import csv
+import subprocess
+import mysql.connector
 from tkinter import *
 import tkinter as tk
 from tkinter import ttk
@@ -22,12 +24,11 @@ from tkinter import messagebox
 from tkcalendar import DateEntry    #https://pypi.org/project/tkcalendar/
 import datetime
 import os
-import logging
 import pandas as pd
-from pandastable import Table
+#from pandastable import Table
 import psycopg2
-import glob    #func last_filename
-from functions import *
+#import glob    #func last_filename
+#from functions import *
 #from sql_functions import select_command
 from datetime import *
 from tkcalendar import Calendar
@@ -42,19 +43,30 @@ folder = 'D:/shared_inventory/server files/'
 
 #https://www.tutorialspoint.com/python_data_access/python_mysql_create_table.htm
 db_name="qsm"
-username='postgres'
+username='sql'
 user_password='Quality01'
-db_host='localhost'
-db_port= '5432'
+db_host='192.168.210.25'
+db_port= '3306'
 
 #establishing the connection
-conn = psycopg2.connect(database=db_name, user=username, password=user_password, host=db_host, port= db_port)
+#conn = psycopg2.connect(database=db_name, user=username, password=user_password, host=db_host, port= db_port)
+conn = mysql.connector.connect(database=db_name, user=username, password=user_password, host=db_host, port=db_port)
+
+if conn:
+    print("Mysql connection ok")
+else:
+    print("Mysql connection nok")
 
 #Creating a cursor object using the cursor() method
 cursor = conn.cursor()
 
 font_columns_name = ('Arial',10,'bold') # normal or bold
 font_wrap_title = ('Arial',12,'bold') # normal or bold
+
+#fixed value for logging porpuses
+script_name = ""
+
+print("line 69")
 
 def clear():
     query = "select index, part_number, description_x, location, qty, lot, expiration from onhand_ingredients"
@@ -72,6 +84,8 @@ def getrow(event):
     qty_sel.set(item['values'][4])  #qty
     lot_sel.set(item['values'][5])  #lot
     expiration_sel.set(item['values'][6])  #expiration
+
+print("line 88")
 
 def update_element():
     index = index_sel.get()
@@ -106,6 +120,8 @@ def add_new_element():
     conn.commit()
     clear()
 
+print("line 123")
+
 def delete_element():
     ingredient_id = t1_sel_data.get()
     if messagebox.askyesno("confirm Delete ?","Are you sure you want to delete this customer?"):
@@ -134,6 +150,8 @@ def search(event = None):
     rows = cursor.fetchall()
     update(rows)
 
+print("line 153")
+
 def search_picking():
     pick_id = pick_id_job.get()
     query = "select pick_id, part_number, part_description, location, qty, part_lot, expiration from picking_data " \
@@ -148,6 +166,8 @@ def new_picking_job():
     global pick_id_new
     pick_id_new = pick_id_new + 1
     pick_id_job.insert(0, pick_id_new)
+
+print("line 170")
 
 def add_job_name():
     pass
@@ -182,13 +202,15 @@ def pick_element():
     query = "insert into picking_data (pick_id, creation_date, deliver_date, creation_time, job_number, " \
             "product_name, received_by, delivered_by, delivered_flag, moved_flag, " \
             "returned_flag, return_date, comments, location, part_number, " \
-            "part_description, part_lot, expiration, qty) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s,  %s, %s,  %s, %s, %s, %s, %s, %s, %s)"
+            "part_description, part_lot, expiration, qty) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
 
     cursor.execute(query,(pick_id, creation_date, delivery_date, time, job_number, product_name, received_by,
                           delivered_by, delivered_flag, moved_flag,  returned_flag, return_date, comments, location,
                           part_number, part_description, part_lot, part_expiration, qty))
     conn.commit()
     search_picking()
+
+print("line 213")
 
 def modify_picking_data():
     subprocess.call("qsm_modify_picking_dataV1.py", shell=True)
@@ -249,7 +271,7 @@ def save_pick_job():
     return_date = returned_date_job.get()
     comments = comments_job.get()
 
-    query = "insert into picking_job (pick_id, creation_date, deliver_date, creation_time, job_number, " \
+    query = "insert into picking_jobs (pick_id, creation_date, deliver_date, creation_time, job_number, " \
             "product_name, received_by, delivered_by, delivered_flag, moved_flag, " \
             "returned_flag, return_date, comments) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s,  %s, %s,  %s)"
 
@@ -260,6 +282,22 @@ def save_pick_job():
     search_picking()
     conn.close()
 
+def log(message_text,  level):
+    global script_name
+    date_log = date_now()
+    time_log = time_now()
+
+    query = "insert into logs (date, time, script_name, text, level) values (%s, %s, %s, %s, %s)"
+
+    cursor.execute(query, (date_log, time_log, script_name, message_text, level))
+    conn.commit()
+
+def import_data_from_csv_to_mysql(db_table,csv_file,command):
+    csv_data = csv.reader(file(csv_file))
+    for row in csv_data:
+        cursor.execute(command)
+
+print("line 300")
 
 #************************************<<<< ROOT >>>>***********************************************
 #*************************************************************************************************
@@ -307,11 +345,12 @@ trv.heading(7, text="Expiration")
 
 trv.bind('<Double 1>', getrow)
 
-query = "select index, part_number, description_x, location, qty, lot, expiration from onhand_ingredients"
-cursor.execute(query)
-rows = cursor.fetchall()
-update(rows)
+#query = "select index, part_number, description_x, location, qty, lot, expiration from onhand_ingredients"
+#cursor.execute(query)
+#rows = cursor.fetchall()
+#update(rows)
 
+print("line 353")
 
 #******************  Tree View: Picking ***************
 #******************************************************
@@ -357,8 +396,10 @@ auto_job_name = StringVar()
 
 # Identify the las number of picking_job and increment by 1 to deliver new next number
 #query = '''SELECT max(pick_id) from picking_job'''
-query0 = "select pick_id from picking_job order by pick_id desc limit 1"
+query0 = "select pick_id from picking_jobs order by pick_id desc limit 1"
 cursor.execute(query0)
+
+print("line 402")
 
 rows = cursor.rowcount
 
@@ -370,7 +411,7 @@ else:
 
     # Update picking selection
     trv_pick.bind('<Double 1>', getrow)
-    query = "select pick_id from picking_job " \
+    query = "select pick_id from picking_jobs " \
             "where pick_id = '" + str(pick_id_new) + "'"
     cursor.execute(query)
     rows = cursor.fetchall()

@@ -1,5 +1,5 @@
 """
-Program to organize the picking process
+Program to organize the return of materials process
 
 Resources:
 https://www.youtube.com/watch?v=i4qLI9lmkqw
@@ -28,7 +28,7 @@ from pandastable import Table
 import psycopg2
 import glob    #func last_filename
 from functions import *
-#from sql_functions import select_command
+from sql_functions import select_command
 from datetime import *
 from tkcalendar import Calendar
 
@@ -45,7 +45,7 @@ db_name="qsm"
 username='postgres'
 user_password='Quality01'
 db_host='localhost'
-db_port= '5432'
+db_port= '8080'
 
 #establishing the connection
 conn = psycopg2.connect(database=db_name, user=username, password=user_password, host=db_host, port= db_port)
@@ -147,7 +147,7 @@ def new_picking_job():
     save_picking_job()
     global pick_id_new
     pick_id_new = pick_id_new + 1
-    pick_id_job.insert(0, pick_id_new)
+    pick_id_job.insert(0,pick_id_new)
 
 def add_job_name():
     pass
@@ -179,7 +179,7 @@ def pick_element():
 
 
 
-    query = "insert into picking_data (pick_id, creation_date, deliver_date, creation_time, job_number, " \
+    query = "insert into picking_data (pick_id, creation_date, deliver_date, time, job_number, " \
             "product_name, received_by, delivered_by, delivered_flag, moved_flag, " \
             "returned_flag, return_date, comments, location, part_number, " \
             "part_description, part_lot, expiration, qty) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s,  %s, %s,  %s, %s, %s, %s, %s, %s, %s)"
@@ -188,6 +188,7 @@ def pick_element():
                           delivered_by, delivered_flag, moved_flag,  returned_flag, return_date, comments, location,
                           part_number, part_description, part_lot, part_expiration, qty))
     conn.commit()
+    clear()
     search_picking()
 
 def modify_picking_data():
@@ -234,7 +235,7 @@ def new_job_name(event=None):
     else:
         pass
 
-def save_pick_job():
+def save_picking_job():
     pick_id = pick_id_job.get()
     creation_date = creation_date_job.get()
     delivery_date = delivery_date_job.get()
@@ -249,7 +250,7 @@ def save_pick_job():
     return_date = returned_date_job.get()
     comments = comments_job.get()
 
-    query = "insert into picking_job (pick_id, creation_date, deliver_date, creation_time, job_number, " \
+    query = "insert into picking_job (pick_id, creation_date, deliver_date, time, job_number, " \
             "product_name, received_by, delivered_by, delivered_flag, moved_flag, " \
             "returned_flag, return_date, comments) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s,  %s, %s,  %s)"
 
@@ -259,6 +260,7 @@ def save_pick_job():
     clear()
     search_picking()
     conn.close()
+
 
 
 #************************************<<<< ROOT >>>>***********************************************
@@ -377,6 +379,7 @@ else:
     update_picking(rows)
 
 
+
 #*************** Job data section *******************
 #****************************************************
 
@@ -420,13 +423,13 @@ received_by_ent_job = ttk.Combobox(wrapper0, textvariable=received_by_job,
 received_by_ent_job.grid(row=3, column=4, padx=PADX, pady=PADY, ipadx=100)
 
 delivered_by_lbl_job = Label(wrapper0, text="Delivered by")
-delivered_by_lbl_job.grid(row=3, column=3, padx=PADX, pady=PADY)
+delivered_by_lbl_job.grid(row=4, column=3, padx=PADX, pady=PADY)
 delivered_by_ent_job = ttk.Combobox(wrapper0, textvariable=delivered_by_job,
                              values=["Juan Ruiz",
                                      "Carlos Jimenez",
                                      "Mauricio Garcia"]
                              )
-delivered_by_ent_job.grid(row=3, column=4, padx=PADX, pady=PADY, ipadx=100)
+delivered_by_ent_job.grid(row=4, column=4, padx=PADX, pady=PADY, ipadx=100)
 
 comments_lbl_job = Label(wrapper0, text="Comments")
 comments_lbl_job.grid(row=5, column=3, padx=PADX, pady=PADY)
@@ -437,10 +440,10 @@ delivered_flag_ent_job = Checkbutton(wrapper0, text="Delivered ?", variable=deli
 delivered_flag_ent_job.grid(row=3, column=0, padx=PADX, pady=PADY, sticky=W)
 
 delivery_date_lbl_job = Label(wrapper0, text="Delivery_date")
-delivery_date_lbl_job.grid(row=2, column=1, padx=PADX, pady=PADY)
+delivery_date_lbl_job.grid(row=3, column=1, padx=PADX, pady=PADY)
 #delivery_date_ent_job = Entry(wrapper0, textvariable=delivery_date_job)
 delivery_date_ent_job = DateEntry(wrapper0, selectmode='day', textvariable=delivery_date_job)
-delivery_date_ent_job.grid(row=2, column=2, padx=PADX, pady=PADY, sticky=W)
+delivery_date_ent_job.grid(row=3, column=2, padx=PADX, pady=PADY, sticky=W)
 delivery_date_ent_job.delete(0,END)
 
 
@@ -462,8 +465,8 @@ new_pick_job_btn.grid(row=1, column=7, padx=PADX, pady=PADY, sticky=W)
 new_pick_job_btn = Button(wrapper0, text="Load")
 new_pick_job_btn.grid(row=2, column=7, padx=PADX, pady=PADY, sticky=W)
 
-save_pick_job_btn = Button(wrapper0, bg="#B7B7B7", text="Save", command=save_pick_job)
-save_pick_job_btn.grid(row=3, column=7, padx=PADX, pady=PADY, sticky=W)
+save_picking_job_btn = Button(wrapper0, bg="#B7B7B7", text="Save", command=save_picking_job)
+save_picking_job_btn.grid(row=3, column=7, padx=PADX, pady=PADY, sticky=W)
 
 modify_picking_data_btn = Button(wrapper0, bg="#B7B7B7", text="Modify", command=modify_picking_data)
 modify_picking_data_btn.grid(row=4, column=7, padx=PADX, pady=PADY, sticky=W)
@@ -488,7 +491,7 @@ clear_btn = Button(wrapper2, text="Clear", command=clear)
 clear_btn.pack(side=tk.LEFT, padx=PADX)
 
 
-#******************* Data selection ******************
+#******************* Data selection ***********************
 #**********************************************************
 
 index_sel = StringVar()
@@ -547,7 +550,8 @@ pick_btn.grid(row=5, column=3, padx=5, pady=3, sticky=W)
 
 search()
 
-root.title("Picking")
+root.title("Return")
 root.geometry("1080x720+50+50")
+
 root.mainloop()
 

@@ -140,7 +140,7 @@ def search():
     q2 = q.get()
     query = "select pick_id, creation_date, deliver_date, creation_time, job_number, product_name, received_by, " \
             "delivered_by, delivered_flag, moved_flag, returned_flag, return_date, comments from picking_job where " \
-            "pick_id like '%"+q2.upper()+"%' or job_number like '%"+q2+"%'"
+            "pick_id = '"+q2.upper()+"' or job_number like '%"+q2+"%'"
     cursor.execute(query)
     rows = cursor.fetchall()
     update(rows)
@@ -175,12 +175,16 @@ trv = ttk.Treeview(wrapper1, columns=(1,2,3,4,5,6,7,8,9,10,11,12,13), show="head
 
 verscrlbar = ttk.Scrollbar(wrapper1, orient="vertical", command=trv.yview)
 verscrlbar.pack(side="right", fill="y")
-verscrlbar.set()
+trv['yscrollcommand']=verscrlbar.set
+
 
 horscrlbar = ttk.Scrollbar(wrapper1, orient="horizontal", command=trv.xview)
 horscrlbar.pack(side="bottom", fill="x")
-horscrlbar.set()
+trv['xscrollcommand']=horscrlbar.set
 
+
+fields = ['pick_id', 'creation_date', 'deliver_date', 'creation_time', 'job_number', 'product_name', 'received_by',
+          'delivered_by', 'delivered_flag', 'moved_flag', 'returned_flag', 'return_date', 'comments']
 
 #columns width
 trv.column(1,width=50)
@@ -189,14 +193,30 @@ trv.column(3,width=280)
 trv.column(4,width=200)
 trv.column(5,width=100)
 trv.column(6,width=200)
+trv.column(7,width=50)
+trv.column(8,width=80)
+trv.column(9,width=280)
+trv.column(10,width=200)
+trv.column(11,width=100)
+trv.column(12,width=200)
+trv.column(13,width=200)
 trv.pack()
 #index, 'part_number','location','expiration','qty', 'lot'
 trv.heading(1, text="pick_id")
-trv.heading(2, text="part_number")
-trv.heading(3, text="Description")
-trv.heading(4, text="Location")
-trv.heading(5, text="Qty")
-trv.heading(6, text="Lot")
+trv.heading(2, text="creation_date")
+trv.heading(3, text="deliver_date")
+trv.heading(4, text="creation_time")
+trv.heading(5, text="job_number")
+trv.heading(6, text="product_name")
+trv.heading(7, text="received_by")
+trv.heading(8, text="delivered_by")
+trv.heading(9, text="delivered_flag")
+trv.heading(10, text="moved_flag")
+trv.heading(11, text="returned_flag")
+trv.heading(12, text="return_date")
+trv.heading(13, text="comments")
+
+
 
 trv.bind('<Double 1>', getrow)
 
