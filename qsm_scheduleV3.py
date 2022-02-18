@@ -3,6 +3,8 @@ https://www.geeksforgeeks.org/python-schedule-library/
 https://schedule.readthedocs.io/en/stable/
 
 Remember to install pandas in current
+V3 Logging to mysql implemented
+
 """
 
 import mysql.connector
@@ -57,7 +59,6 @@ def qsm_merge():
     print("Executing Merge...")
     subprocess.call(["python","qsm_mergeV4_3.py"])
     log("qsm_merge ok","info")
-
 
 # Task scheduling
 # After every 10mins geeks() is called.
