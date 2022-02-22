@@ -60,21 +60,6 @@ def qsm_merge():
     subprocess.call(["python","qsm_mergeV4_3.py"])
     log("qsm_merge ok","info")
 
-def good_luck():
-    print("Good Luck for Test")
-
-def work():
-    print("Study and work hard")
-
-
-def bedtime():
-    print("It is bed time go rest")
-
-
-def geeks():
-    print("Shaurya says Geeksforgeeks")
-
-
 # Task scheduling
 # After every 10mins geeks() is called.
 #schedule.every(10).minutes.do(geeks)
