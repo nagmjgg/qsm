@@ -1,0 +1,48 @@
+2022-02-10 10:15:26,441 : WARNING : __main__ : Something is not right.
+2022-02-10 10:15:26,441 : ERROR : __main__ : A Major error has happened.
+2022-02-10 10:15:26,441 : CRITICAL : __main__ : Fatal error. Cannot continue
+2022-02-10 11:17:23,101 : WARNING : __main__ : Something is not right.
+2022-02-10 11:17:23,101 : ERROR : __main__ : A Major error has happened.
+2022-02-10 11:17:23,101 : CRITICAL : __main__ : Fatal error. Cannot continue
+2022-02-10 11:18:20,217 : WARNING : __main__ : Something is not right.
+2022-02-10 11:18:20,217 : ERROR : __main__ : A Major error has happened.
+2022-02-10 11:18:20,217 : CRITICAL : __main__ : Fatal error. Cannot continue
+2022-02-10 11:18:29,753 : WARNING : __main__ : Something is not right.
+2022-02-10 11:18:29,753 : ERROR : __main__ : A Major error has happened.
+2022-02-10 11:18:29,753 : CRITICAL : __main__ : Fatal error. Cannot continue
+2022-02-10 11:24:47,608 : WARNING : __main__ : Something is not right.
+2022-02-10 11:24:47,608 : ERROR : __main__ : A Major error has happened.
+2022-02-10 11:24:47,608 : CRITICAL : __main__ : Fatal error. Cannot continue
+2022-02-10 11:24:54,714 : WARNING : __main__ : Something is not right.
+2022-02-10 11:24:54,714 : ERROR : __main__ : A Major error has happened.
+2022-02-10 11:24:54,714 : CRITICAL : __main__ : Fatal error. Cannot continue
+2022-02-10 11:24:54,714 : INFO : __main__ : pruebas 123
+2022-02-10 11:25:04,744 : WARNING : __main__ : Something is not right.
+2022-02-10 11:25:04,744 : ERROR : __main__ : A Major error has happened.
+2022-02-10 11:25:04,744 : CRITICAL : __main__ : Fatal error. Cannot continue
+2022-02-10 11:25:04,744 : WARNING : __main__ : pruebas 123
+2022-02-10 11:28:18,022 : INFO : __main__ : prueba mysql
+2022-02-10 11:29:39,642 : INFO : __main__ : prueba mysql
+2022-02-10 11:30:12,485 : INFO : __main__ : prueba mysql
+2022-02-10 12:54:11,245 : WARNING : __main__ : Something is not right.
+2022-02-10 12:54:11,245 : ERROR : __main__ : A Major error has happened.
+2022-02-10 12:54:11,245 : CRITICAL : __main__ : Fatal error. Cannot continue
+2022-02-10 12:54:11,245 : WARNING : __main__ : pruebas 123
+2022-02-10 12:54:25,363 : WARNING : __main__ : Something is not right.
+2022-02-10 12:54:25,363 : ERROR : __main__ : A Major error has happened.
+2022-02-10 12:54:25,363 : CRITICAL : __main__ : Fatal error. Cannot continue
+2022-02-10 12:54:25,363 : WARNING : __main__ : pruebas 123
+2022-02-10 12:57:09,901 : WARNING : __main__ : Something is not right.
+2022-02-10 12:57:09,901 : ERROR : __main__ : A Major error has happened.
+2022-02-10 12:57:09,901 : CRITICAL : __main__ : Fatal error. Cannot continue
+2022-02-10 12:57:09,901 : WARNING : __main__ : pruebas 123
+2022-02-10 12:57:26,348 : WARNING : __main__ : Something is not right.
+2022-02-10 12:57:26,348 : ERROR : __main__ : A Major error has happened.
+2022-02-10 12:57:26,348 : CRITICAL : __main__ : Fatal error. Cannot continue
+2022-02-10 12:57:26,348 : WARNING : __main__ : pruebas 123
+2022-02-10 12:57:43,329 : WARNING : __main__ : Something is not right.
+2022-02-10 12:57:43,329 : ERROR : __main__ : A Major error has happened.
+2022-02-10 12:57:43,329 : CRITICAL : __main__ : Fatal error. Cannot continue
+2022-02-10 12:57:43,329 : WARNING : __main__ : pruebas 123
+2022-02-10 15:15:01,037 : INFO : __main__ : prueba mysql
+2022-02-10 15:15:38,631 : INFO : __main__ : prueba mysql

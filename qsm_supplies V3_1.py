@@ -1,34 +1,58 @@
 """
 Programm to input supplies devlivered to the different departments
 
-
+V3 change of database from postgresql for mysql
+v3.1 insert logging to db
 
 """
 
+import os
+import socket
 import tkinter as tk
 from tkinter import *
 from tkinter import ttk
+from tkinter import messagebox
 from tkcalendar import DateEntry
 from datetime import date,datetime
-
 #https://www.tutorialspoint.com/python_data_access/python_mysql_create_table.htm
-import psycopg2
+import mysql.connector
+
+import socket   #identify ip address
 
 db_name="qsm"
-username='postgres'
-user_password='Quality01'
-db_host='127.0.0.1'
-db_port= '5432'
+username='supply'
+user_password='SupplyQualityQsm'
+db_host='192.168.210.25'
+db_port= '3306'
 
 #establishing the connection
-conn = psycopg2.connect(database=db_name, user=username, password=user_password, host=db_host, port=db_port)
+conn = mysql.connector.connect(database=db_name, user=username, password=user_password, host=db_host, port=db_port)
 
 #Creating a cursor object using the cursor() method
 cursor = conn.cursor()
 
+def get_filename():
+    filename_path = __file__
+    filename = filename_path.split("/")
+    filename = filename_path.split("\\")
+    return filename[-1]
+    print(filename[-1])
+
+def get_ip_address():
+    host_name = socket.gethostname()
+    host_ip = socket.gethostbyname(host_name)
+    return host_ip
+
+
+#fixed value for logging porpuses
+pc_login = os.getlogin()
+file_name = get_filename()
+ip_address = get_ip_address()
+
 # Fonts
 font_columns_name = ('Arial',10,'bold') # normal or bold
 font_wrap_title = ('Arial',12,'bold') # normal or bold
+
 
 #fixed values
 PADX = 1
@@ -74,11 +98,15 @@ def clear():
     part_lot_ent.delete(0, END)
     qty_ent.delete(0, END)
     unit_ent.delete(0, END)
+    unit_ent.insert(0, "ea")
     received_by_ent.delete(0, END)
     delivered_by_ent.delete(0, END)
-    updated_ent.delete(0, END)
+    relocated_ent.delete(0, END)
+    relocated_ent.insert(0,"PENDING")
 
 def add_new_element():
+    global conn
+    global cursor
     date_sel = date_ent.get()
     time_sel = time_ent.get()
     part_number_sel = part_number_ent.get()
@@ -88,21 +116,80 @@ def add_new_element():
     unit_sel = part_unit_sel.get()
     received_by_sel = received_by_ent.get()
     delivered_by_sel = delivered_by_ent.get()
-    updated_sel = updated_ent.get()
+    relocated_sel = relocated_ent.get()
 
-    query = "insert into supplies (date, time, part_number, part_name, part_lot, qty, unit, received_by, " \
-            "delivered_by, updated_flag) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+    validate_if_empty(received_by_sel)
+    validate_if_numeric(received_by_sel)
+    validate_if_empty(delivered_by_sel)
+    validate_if_numeric(delivered_by_sel)
 
-    cursor.execute(query, (date_sel, time_sel, part_number_sel.upper(), part_name_sel.upper(), part_lot_sel.upper(), qty_sel, unit_sel,
-                           received_by_sel.upper(), delivered_by_sel.upper(), updated_sel))
+    if conn.is_connected():
+        pass
+        print("connected")
+
+    else:
+        print("not connected")
+        conn = mysql.connector.connect(database=db_name, user=username, password=user_password, host=db_host,
+                                       port=db_port)
+        cursor = conn.cursor()
+
+    query = "insert into supplies (date, time, part_number, part_name, lot, qty, unit, received_by, " \
+            "delivered_by, relocated_flag) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+
+    cursor.execute(query, (
+    date_sel, time_sel, part_number_sel.upper(), part_name_sel.upper(), part_lot_sel.upper(), qty_sel, unit_sel,
+    received_by_sel.upper(), delivered_by_sel.upper(), relocated_sel))
+
     conn.commit()
     clear()
+    message = "add_new_element ok"
+    log(message,"info")
+
+def log(message_text,  level):
+    global script_name
+    global file_name
+    date_log = date_now()
+    time_log = time_now()
+    login = pc_login
+
+
+    query = "insert into logs (date, time, script_name, ip_address, pc_login, text, level) values (%s, %s, %s, %s, %s, %s, %s)"
+
+    cursor.execute(query, (date_log, time_log, file_name, ip_address, login, message_text, level))
+    conn.commit()
+
+def validate_if_empty(widget):
+    if len(widget) == 0:
+        text = f"{widget} can not be empty"
+        messagebox.showerror(title="Empty Field", message=text)
+        return 0
+    else:
+        return 1
+
+def validate_if_numeric(widget):
+    if widget.isnumeric():
+        text = f"{widget} can not be numeric"
+        messagebox.showerror(title="Numeric Field", message=text)
+        return 0
+    else:
+        return 1
+
+def validate_if_empty_numeric(widget):
+    empty_validation = validate_if_empty(widget)
+    numeric_validation = validate_if_numeric(widget)
+
+    validation_result = empty_validation + numeric_validation
+
+    if validation_result == 2:
+        return 1
+    else:
+        return 0
+
 
 #***************************** ROOT **********************************
 #*********************************************************************
 
 root = Tk()
-
 root.title("Supplies")
 
 """#Get the current screen width and height
@@ -111,7 +198,7 @@ screen_height = root.winfo_screenheight()
 screen_size = str(screen_width) + "x" + str(screen_height)
 root.geometry(screen_size)
 """
-root.geometry("640x510+10+10")
+
 
 font_columns_name = ('Arial',12,'bold') # normal or bold
 font_wrap_title = ('Arial',12,'bold') # normal or bold
@@ -143,7 +230,7 @@ search_btn.grid(row=1, column=1, padx=PADX, pady=PADY, sticky=W)
 #*********************** List *******************************
 #************************************************************
 
-trv = ttk.Treeview(wrapper1, columns=(1,2,3,4), show="headings", height="3")
+trv = ttk.Treeview(wrapper1, columns=(1,2,3,4), show="headings", height="10")
 
 verscrlbar = ttk.Scrollbar(wrapper1, orient="vertical", command=trv.yview)
 verscrlbar.pack(side="right",fill="y")
@@ -169,9 +256,9 @@ part_name_sel = StringVar()
 part_lot_ent = StringVar()
 qty_ent = StringVar()
 part_unit_sel = StringVar()
-received_by_ent = StringVar()
-delivered_by_ent = StringVar()
-updated_ent = StringVar()
+received_by_sel = StringVar()
+delivered_by_sel = StringVar()
+relocated_ent = StringVar()
 
 
 """verscrlbar = ttk.Scrollbar()
@@ -186,7 +273,7 @@ frame["xscrollcommand"] = horscrlbar.set
 
 date_lbl = Label(wrapper2, text="Date", font=font_label)
 date_lbl.grid(row=0, column=0, padx=PADX, pady=PADY)
-date_ent = Entry(wrapper2, textvariable=date_ent, font=font_entry)
+date_ent = DateEntry(wrapper2, selectmode='day', textvariable=date_ent, font=font_entry)
 date_ent.grid(row=0, column=1, padx=PADX, pady=PADY, ipadx=10, sticky=W)
 date_ent.insert(0,date_now())
 
@@ -220,29 +307,41 @@ unit_lbl = Label(wrapper2, text="Unit", font=font_label)
 unit_lbl.grid(row=6, column=0, padx=PADX, pady=PADY)
 unit_ent = Entry(wrapper2, textvariable=part_unit_sel, font=font_entry)
 unit_ent.grid(row=6, column=1, padx=PADX, pady=PADY, sticky=W)
+unit_ent.insert(0,"ea")
 
-list_warehouse = ["CARLOS JIMENEZ","JUAN RUIZ","MAURICIO GARCIA"]
+list_received_by = ["ADRIANA","ALVARO","ANGEL","ANTONIO","BENITO","BRENDA","CERAFIN","CHAPO","CONCHA","DANIEL","DENIS"
+    ,"FELIX","FELIPE","JAIME","JAVIER","JORGE","MARIA","MANUEL","OMAR","SILVERIO","SILVIA","RUBEN","RAFAEL",
+                    "STAGE ROOM","VILMAR","WILL"]
 
 received_by_lbl = Label(wrapper2, text="Received by", font=font_label)
 received_by_lbl.grid(row=7, column=0, padx=PADX, pady=PADY)
-received_by_ent = Entry(wrapper2, textvariable=received_by_ent, font=font_entry)
+received_by_ent = ttk.Combobox(wrapper2, values=list_received_by, textvariable=received_by_sel, font=font_entry,
+                               validate='focusout')
+
 received_by_ent.grid(row=7, column=1, padx=PADX, pady=PADY, ipadx=100, sticky=W)
+
+
+
+list_warehouse = ["CARLOS JIMENEZ","JUAN RUIZ","MAURICIO GARCIA"]
 
 delivered_by_lbl = Label(wrapper2, text="Delivered by", font=font_label)
 delivered_by_lbl.grid(row=8, column=0, padx=PADX, pady=PADY)
-delivered_by_ent = ttk.Combobox(wrapper2, values=list_warehouse, textvariable=delivered_by_ent, font=font_entry)
+delivered_by_ent = ttk.Combobox(wrapper2, values=list_warehouse, textvariable=delivered_by_sel, font=font_entry)
 delivered_by_ent.grid(row=8, column=1, padx=PADX, pady=PADY, ipadx=100, sticky=W)
 
-list_updated = ["PENDING","OK"]
-updated_lbl = Label(wrapper2, text="Updated", font=font_label)
-updated_lbl.grid(row=9, column=0, padx=PADX, pady=PADY)
-updated_ent = ttk.Combobox(wrapper2, values=list_updated, textvariable=updated_ent, font=font_entry)
-updated_ent.grid(row=9, column=1, padx=PADX, pady=PADY, ipadx=50, sticky=W)
 
-add_btn = Button(wrapper2, text="OK", command=add_new_element, font=font_button)
+list_relocated = ["PENDING","OK"]
+
+relocated_lbl = Label(wrapper2, text="Relocated ?", font=font_label)
+relocated_lbl.grid(row=9, column=0, padx=PADX, pady=PADY)
+relocated_ent = ttk.Combobox(wrapper2, values=list_relocated, textvariable=relocated_ent, font=font_entry)
+relocated_ent.grid(row=9, column=1, padx=PADX, pady=PADY, ipadx=50, sticky=W)
+relocated_ent.insert(0,"PENDING")
+
+add_btn = Button(wrapper2, text="OK", command=add_new_element, font=font_button, width=10)
 add_btn.grid(row=10, column=0, padx=5, pady=3, sticky=EW)
 
-clear_btn = Button(wrapper2, text="Clear", command=clear, font=font_button)
+clear_btn = Button(wrapper2, text="Clear", command=clear, font=font_button, width=10)
 clear_btn.grid(row=10, column=1, padx=5, pady=3, sticky=W)
 
 
@@ -250,5 +349,5 @@ clear_btn.grid(row=10, column=1, padx=5, pady=3, sticky=W)
 
 trv.bind('<Double 1>', getrow)
 
-
+root.geometry("640x660+600+200")
 root.mainloop()

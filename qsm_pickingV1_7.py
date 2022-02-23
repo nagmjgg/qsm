@@ -9,6 +9,8 @@ Programa con marcos  y formulario con consulta a base de datos
 #grids
 https://pythonguides.com/python-tkinter-grid/
 
+using Database norms
+
 """
 import subprocess
 
@@ -58,6 +60,8 @@ conn = psycopg2.connect(database=db_name, user=username, password=user_password,
 #Creating a cursor object using the cursor() method
 cursor = conn.cursor()
 
+columns_name_font = ('Arial',12,'bold') # normal or bold
+wrape_title_font = ('Arial',14,'bold') # normal or bold
 
 def clear():
     query = "select index, part_number, description_x, location, qty, lot, expiration from onhand_ingredients"
@@ -193,6 +197,33 @@ def pick_element():
 def modify_picking_data():
     subprocess.call("qsm_modify_pick V1.py", shell=True)
 
+def modify_jobs_data():
+    subprocess.call("qsm_modify_jobs V1.py", shell=True)
+
+def query_to_dataframe(conn, query, column_names):
+   """
+   #df = postgresql_to_dataframe(conn, "select * from MonthlyTemp", column_names)
+   #column_names = ["id", "source", "datetime", "mean_temp"]
+
+   https://naysan.ca/2020/05/31/postgresql-to-pandas/
+   Tranform a SELECT query into a pandas dataframe
+   """
+   cursor = conn.cursor()
+   try:
+      cursor.execute(query)
+   except (Exception, psycopg2.DatabaseError) as error:
+      print("Error: %s" % error)
+      cursor.close()
+      return 1
+
+   # Naturally we get a list of tupples
+   tupples = cursor.fetchall()
+   cursor.close()
+
+   # We just need to turn it into a pandas dataframe
+   df = pd.DataFrame(tupples, columns=column_names)
+   df = df.drop_duplicates()
+   return df
 
 #************** Root ***************
 
@@ -201,17 +232,17 @@ root = Tk()
 PADX = 2
 PADY = 2
 
-wrapper0 = LabelFrame(root, text="Job Data")
+wrapper0 = LabelFrame(root, text="Job Data", font=wrape_title_font)
 wrapper1 = LabelFrame(root, text="Database")
 wrapper2 = LabelFrame(root, text="Search")
 wrapper3 = LabelFrame(root, text="Selection")
 wrapper4 = LabelFrame(root, text="Pick")
 
-wrapper0.pack(fill="both", expand="yes", padx=PADX, pady=3)
-wrapper1.pack(fill="both", expand="yes", padx=PADX, pady=3)
-wrapper2.pack(fill="both", expand="yes", padx=PADX, pady=3)
-wrapper3.pack(fill="both", expand="yes", padx=PADX, pady=3)
-wrapper4.pack(fill="both", expand="yes", padx=PADX, pady=3)
+wrapper0.pack(fill="both", expand="yes", padx=3, pady=3)
+wrapper1.pack(fill="both", expand="yes", padx=3, pady=3)
+wrapper2.pack(fill="both", expand="yes", padx=3, pady=3)
+wrapper3.pack(fill="both", expand="yes", padx=3, pady=3)
+wrapper4.pack(fill="both", expand="yes", padx=3, pady=3)
 
 
 trv = ttk.Treeview(wrapper1, columns=(1,2,3,4,5,6,7), show="headings", height="4")
@@ -283,6 +314,7 @@ comments_job = StringVar()
 moved_flag_job = IntVar()
 returned_flag_job = IntVar()
 returned_date_job = StringVar()
+auto_job_name = StringVar()
 
 query = '''SELECT max(pick_id) from picking_data'''
 
@@ -324,17 +356,22 @@ time_ent_job = Entry(wrapper0, textvariable=time_job)
 time_ent_job.grid(row=1, column=2, padx=PADX, pady=PADY, sticky=W)
 time_ent_job.insert(END, time_now())
 
+def new_job_name():
+    global auto_job_name
+    df = query_to_dataframe(conn, "select mfg_status from jobs", ['mfg_status'])
+    auto_job_name = df['mfg_status'][0]
+    print(auto_job_name)
+    product_name_ent_job.insert(END, auto_job_name)
 
 job_number_lbl_job = Label(wrapper0, text="Job Number")
 job_number_lbl_job.grid(row=0, column=3, padx=PADX, pady=PADY)
-job_number_ent_job = Entry(wrapper0, textvariable=job_number_job)
+job_number_ent_job = Entry(wrapper0, textvariable=job_number_job, validate='focusout', validatecommand=new_job_name)
 job_number_ent_job.grid(row=1, column=3, padx=PADX, pady=PADY, sticky=W)
 
 product_name_lbl_job = Label(wrapper0, text="Product Name")
 product_name_lbl_job.grid(row=0, column=4, padx=PADX, pady=PADY)
 product_name_ent_job = Entry(wrapper0, textvariable=product_name_job)
 product_name_ent_job.grid(row=1, column=4, padx=PADX, pady=PADY, ipadx=100)
-product_name_ent_job.insert(END, result)
 
 received_by_lbl_job = Label(wrapper0, text="Received by")
 received_by_lbl_job.grid(row=3, column=3, padx=PADX, pady=PADY)
@@ -377,11 +414,12 @@ return_date_ent_job.delete(0,END)
 new_pick_job_btn = Button(wrapper0, text="New Picking Job")
 new_pick_job_btn.grid(row=3, column=7, padx=PADX, pady=PADY, sticky=W)
 
-add_job_name_btn = Button(wrapper0, text="Add Job Name")
-add_job_name_btn.grid(row=4, column=7, padx=PADX, pady=PADY, sticky=W)
+modify_picking_data_btn = Button(wrapper0, text="Modify Picking Data", command=modify_picking_data)
+modify_picking_data_btn.grid(row=4, column=7, padx=PADX, pady=PADY, sticky=W)
 
-modify_job_btn = Button(wrapper0, text="Modify Picking Data", command=modify_picking_data)
-modify_job_btn.grid(row=5, column=7, padx=PADX, pady=PADY, sticky=W)
+modify_jobs_data_btn = Button(wrapper0, text="Modify Job Data", command=modify_jobs_data)
+modify_jobs_data_btn.grid(row=5, column=7, padx=PADX, pady=PADY, sticky=W)
+
 
 #******************** Search section ********************
 #********************************************************
@@ -450,10 +488,10 @@ add_btn = Button(wrapper3, text="Add New", command=add_new_element)
 delete_btn = Button(wrapper3, text="Delete", command=delete_element)
 pick_btn = Button(wrapper3, text="Pick", command=pick_element)
 
-add_btn.grid(row=5, column=0, padx=5, pady=PADY, sticky=W)
-update_btn.grid(row=5, column=1, padx=5, pady=PADY, sticky=W)
-delete_btn.grid(row=5, column=2, padx=5, pady=PADY, sticky=W)
-pick_btn.grid(row=5, column=3, padx=5, pady=PADY, sticky=W)
+add_btn.grid(row=5, column=0, padx=5, pady=3, sticky=W)
+update_btn.grid(row=5, column=1, padx=5, pady=3, sticky=W)
+delete_btn.grid(row=5, column=2, padx=5, pady=3, sticky=W)
+pick_btn.grid(row=5, column=3, padx=5, pady=3, sticky=W)
 
 search()
 
