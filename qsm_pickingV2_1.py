@@ -12,7 +12,6 @@ https://pythonguides.com/python-tkinter-grid/
 using Database norms
 
 V2 Start using Mysql database
-v2.2 stable version
 
 """
 import csv
@@ -172,30 +171,24 @@ print("line 153")
 
 def search_picking():
     pick_id = pick_id_job.get()
-    query = "select id, part_number, part_description, location, qty, part_lot, expiration from picking_data " \
+    query = "select pick_id, part_number, part_description, location, qty, part_lot, expiration from picking_data " \
             "where picking_job_id = '" +pick_id + "'"
     cursor.execute(query)
     rows = cursor.fetchall()
     update_picking(rows)
 
 def new_picking_job():
-    pick_id_ent_job.delete(0,END)
-    creation_date_ent_job.delete(0,END)
-    creation_date_ent_job.insert(0,date_now())
-    time_ent_job.delete(0,END)
-    time_ent_job.insert(END, time_now())
-    job_number_ent_job.delete(0,END)
-    product_name_ent_job.delete(0,END)
-    received_by_ent_job.delete(0,END)
-    delivered_by_ent_job.delete(0,END)
-    destination_ent_job.delete(0,END)
-    comments_ent_job.delete(0,END)
-    delivery_date_ent_job.delete(0,END)
-    delivery_date_ent_job.insert(0, '2000-01-01')
-    moved_flag_ent_job = 0
-    returned_flag_ent_job = 0
-    return_date_ent_job.delete(0, END)
-    return_date_ent_job.insert(0, '2000-01-01')
+    update_picking()
+    save_picking_job()
+    global pick_id_new
+    pick_id_new = pick_id_new + 1
+    pick_id_job.insert(0, pick_id_new)
+
+print("line 170")
+
+def add_job_name():
+    pass
+
 
 def pick_element():
     pick_id = pick_id_job.get()
@@ -278,26 +271,18 @@ def new_job_name(event=None):
         pass
 
 def new_pick_id_job(event=None):
-    """
-        Identify the new identifier for "Picking_Job_Id" for the specific job
-
-    """
     query = "select id from picking_jobs where creation_date = '" + creation_date_job.get() + \
             "' and creation_time = '" + creation_time_job.get() + "' and job_number = '" + job_number_job.get() + "'"
     cursor.execute(query)
-
-    print(f"new pick id job: {cursor.rowcount}")
+    conn.commit()
 
     df = query_to_dataframe(conn, query, ['id'])
     if df['id'][0] is not None:
         pick_job_id = df['id'][0]
-        print(f"df['id']: {pick_job_id}")
         pick_id_ent_job.delete(0, END)
         pick_id_ent_job.insert(END, pick_job_id)
     else:
         pass
-
-    conn.commit()
 
 def save_pick_job():
     pick_id = pick_id_job.get()
@@ -315,27 +300,22 @@ def save_pick_job():
     comments = comments_job.get()
     destination = destination_job.get()
 
-    query0 = "select creation_date, delivery_date, creation_time, job_number from picking_jobs where " \
-            "creation_date = '" + creation_date + "' and delivery_date = '" + delivery_date + \
-            "' and creation_time = '" + time + "' and job_number = '" + job_number + "'"
+    query = "insert into picking_jobs (creation_date, delivery_date, creation_time, job_number, " \
+            "product_name, received_by, delivered_by, delivered_flag, moved_flag, " \
+            "returned_flag, return_date, comments, destination) " \
+            "values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
 
-    cursor.execute(query0)
-
-    row_count = cursor.rowcount
-
-    if row_count == 0:
-
-        query1 = "insert into picking_jobs (creation_date, delivery_date, creation_time, job_number, " \
-                "product_name, received_by, delivered_by, delivered_flag, moved_flag, " \
-                "returned_flag, return_date, comments, destination) " \
-                "values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
-
-        cursor.execute(query1, (creation_date, delivery_date, time, job_number, product_name, received_by,
-                               delivered_by, delivered_flag, moved_flag, returned_flag, return_date, comments, destination))
-        conn.commit()
-        new_pick_id_job()
+    cursor.execute(query, (creation_date, delivery_date, time, job_number, product_name, received_by,
+                           delivered_by, delivered_flag, moved_flag, returned_flag, return_date, comments, destination))
+    conn.commit()
     clear()
+    #new_pick_id_job()
     #search_picking()
+
+
+
+
+
 
 def log(message_text,  level):
     global script_name
@@ -405,6 +385,8 @@ trv.bind('<Double 1>', getrow)
 #rows = cursor.fetchall()
 #update(rows)
 
+print("line 353")
+
 #******************  Tree View: Picking ***************
 #******************************************************
 
@@ -431,9 +413,6 @@ trv_pick.heading(5, text="Qty")
 trv_pick.heading(6, text="Lot")
 trv_pick.heading(7, text="Expiration")
 
-#*************** Job data section *******************
-#****************************************************
-
 pick_id_job = StringVar()
 modified_job = StringVar()
 creation_date_job = StringVar()
@@ -451,15 +430,19 @@ moved_flag_job = IntVar()
 returned_flag_job = IntVar()
 returned_date_job = StringVar()
 auto_job_name = StringVar()
-q = StringVar()
 
+# Identify the las number of picking_job and increment by 1 to deliver new next number
+#query = '''SELECT max(pick_id) from picking_job'''
+query0 = "select id from picking_jobs order by id desc limit 1"
+cursor.execute(query0)
 
-
+#*************** Job data section *******************
+#****************************************************
 
 #Entry state = "normal", "disabled", or "readonly"
 pick_id_lbl_job = Label(wrapper0, text="Pick id")
 pick_id_lbl_job.grid(row=0, column=0, padx=PADX, pady=PADY)
-pick_id_ent_job = Entry(wrapper0, textvariable=pick_id_job, state="normal")
+pick_id_ent_job = Entry(wrapper0, textvariable=pick_id_job, state="disabled")
 pick_id_ent_job.grid(row=1, column=0, padx=PADX, pady=PADY, sticky=W)
 #pick_id_ent_job.insert(END,pick_id_new)
 
@@ -545,14 +528,14 @@ return_date_ent_job.grid(row=4, column=2, padx=PADX, pady=PADY)
 return_date_ent_job.delete(0,END)
 return_date_ent_job.insert(0,'2000-01-01')
 
-save_pick_job_btn = Button(wrapper0, bg="#B7B7B7", text="Save", command=save_pick_job)
-save_pick_job_btn.grid(row=1, column=7, padx=PADX, pady=PADY, sticky=W)
+new_pick_job_btn = Button(wrapper0, text="New")
+new_pick_job_btn.grid(row=1, column=7, padx=PADX, pady=PADY, sticky=W)
 
 new_pick_job_btn = Button(wrapper0, text="Load")
 new_pick_job_btn.grid(row=2, column=7, padx=PADX, pady=PADY, sticky=W)
 
-new_pick_job_btn = Button(wrapper0, text="New", command=new_picking_job)
-new_pick_job_btn.grid(row=3, column=7, padx=PADX, pady=PADY, sticky=W)
+save_pick_job_btn = Button(wrapper0, bg="#B7B7B7", text="Save", command=save_pick_job)
+save_pick_job_btn.grid(row=3, column=7, padx=PADX, pady=PADY, sticky=W)
 
 modify_picking_data_btn = Button(wrapper0, bg="#B7B7B7", text="Modify", command=modify_picking_data)
 modify_picking_data_btn.grid(row=4, column=7, padx=PADX, pady=PADY, sticky=W)
@@ -564,16 +547,17 @@ modify_jobs_data_btn.grid(row=5, column=7, padx=PADX, pady=PADY, sticky=W)
 #******************** Search section ********************
 #********************************************************
 
-def set_search_section():
-    search_lbl = Label(wrapper2, text="Search")
-    search_lbl.pack(side=tk.LEFT, padx=PADX)
-    search_ent = Entry(wrapper2, textvariable=q)
-    search_ent.pack(side=tk.LEFT, padx=PADX)
-    search_ent.bind('<Return>',search)
-    search_btn = Button(wrapper2, text="Search", command=search)
-    search_btn.pack(side=tk.LEFT, padx=PADX)
-    clear_btn = Button(wrapper2, text="Clear", command=clear)
-    clear_btn.pack(side=tk.LEFT, padx=PADX)
+q = StringVar()
+
+search_lbl = Label(wrapper2, text="Search")
+search_lbl.pack(side=tk.LEFT, padx=PADX)
+search_ent = Entry(wrapper2, textvariable=q)
+search_ent.pack(side=tk.LEFT, padx=PADX)
+search_ent.bind('<Return>',search)
+search_btn = Button(wrapper2, text="Search", command=search)
+search_btn.pack(side=tk.LEFT, padx=PADX)
+clear_btn = Button(wrapper2, text="Clear", command=clear)
+clear_btn.pack(side=tk.LEFT, padx=PADX)
 
 
 #******************* Data selection ******************
@@ -587,59 +571,53 @@ qty_sel = StringVar()
 lot_sel = StringVar()
 expiration_sel = StringVar()
 
-def set_data_selection_section():
+id_lbl = Label(wrapper3, text="Id")
+id_lbl.grid(row=0, column=0, padx=PADX, pady=PADY, ipadx=2)
+id_ent = Entry(wrapper3, textvariable=id_sel)
+id_ent.grid(row=1, column=0, padx=PADX, pady=PADY, sticky=W)
+
+part_number_lbl = Label(wrapper3, text="Part number")
+part_number_lbl.grid(row=0, column=1,padx=PADX, pady=PADY)
+part_number_ent = Entry(wrapper3, textvariable=part_number_sel)
+part_number_ent.grid(row=1, column=1, padx=PADX, pady=PADY, sticky=W)
+
+description_lbl = Label(wrapper3, text="Description")
+description_lbl.grid(row=0, column=2, padx=PADX, pady=PADY)
+description_ent = Entry(wrapper3, textvariable=description_sel)
+description_ent.grid(row=1, column=2, padx=PADX, pady=PADY, ipadx=120, sticky=W)
+
+location_lbl = Label(wrapper3, text="Location")
+location_lbl.grid(row=0, column=3, padx=PADX, pady=PADY)
+location_ent = Entry(wrapper3, textvariable=location_sel)
+location_ent.grid(row=1, column=3, padx=PADX, pady=PADY, ipadx=50, sticky=W)
+
+qty_lbl = Label(wrapper3, text="Qty")
+qty_lbl.grid(row=0, column=4, padx=PADX, pady=PADY)
+qty_ent = Entry(wrapper3, textvariable=qty_sel)
+qty_ent.grid(row=1, column=4, padx=PADX, pady=PADY, sticky=W)
+
+lot_lbl = Label(wrapper3, text="Lot")
+lot_lbl.grid(row=2, column=3, padx=PADX, pady=PADY)
+lot_ent = Entry(wrapper3, textvariable=lot_sel)
+lot_ent.grid(row=3, column=3, padx=PADX, pady=PADY, ipadx=50, sticky=W)
+
+expiration_lbl = Label(wrapper3, text="Expiration")
+expiration_lbl.grid(row=2, column=4, padx=PADX, pady=PADY)
+expiration_ent = Entry(wrapper3, textvariable=expiration_sel)
+expiration_ent.grid(row=3, column=4, padx=PADX, pady=PADY, sticky=W)
 
 
-    id_lbl = Label(wrapper3, text="Id")
-    id_lbl.grid(row=0, column=0, padx=PADX, pady=PADY, ipadx=2)
-    id_ent = Entry(wrapper3, textvariable=id_sel)
-    id_ent.grid(row=1, column=0, padx=PADX, pady=PADY, sticky=W)
+update_btn = Button(wrapper3, text="Update", command=update_element)
+add_btn = Button(wrapper3, text="Add New", command=add_new_element)
+delete_btn = Button(wrapper3, text="Delete", command=delete_element)
+pick_btn = Button(wrapper3, text="Pick", command=pick_element)
 
-    part_number_lbl = Label(wrapper3, text="Part number")
-    part_number_lbl.grid(row=0, column=1,padx=PADX, pady=PADY)
-    part_number_ent = Entry(wrapper3, textvariable=part_number_sel)
-    part_number_ent.grid(row=1, column=1, padx=PADX, pady=PADY, sticky=W)
+add_btn.grid(row=5, column=0, padx=5, pady=3, sticky=W)
+update_btn.grid(row=5, column=1, padx=5, pady=3, sticky=W)
+delete_btn.grid(row=5, column=2, padx=5, pady=3, sticky=W)
+pick_btn.grid(row=5, column=3, padx=5, pady=3, sticky=W)
 
-    description_lbl = Label(wrapper3, text="Description")
-    description_lbl.grid(row=0, column=2, padx=PADX, pady=PADY)
-    description_ent = Entry(wrapper3, textvariable=description_sel)
-    description_ent.grid(row=1, column=2, padx=PADX, pady=PADY, ipadx=120, sticky=W)
-
-    location_lbl = Label(wrapper3, text="Location")
-    location_lbl.grid(row=0, column=3, padx=PADX, pady=PADY)
-    location_ent = Entry(wrapper3, textvariable=location_sel)
-    location_ent.grid(row=1, column=3, padx=PADX, pady=PADY, ipadx=50, sticky=W)
-
-    qty_lbl = Label(wrapper3, text="Qty")
-    qty_lbl.grid(row=0, column=4, padx=PADX, pady=PADY)
-    qty_ent = Entry(wrapper3, textvariable=qty_sel)
-    qty_ent.grid(row=1, column=4, padx=PADX, pady=PADY, sticky=W)
-
-    lot_lbl = Label(wrapper3, text="Lot")
-    lot_lbl.grid(row=2, column=3, padx=PADX, pady=PADY)
-    lot_ent = Entry(wrapper3, textvariable=lot_sel)
-    lot_ent.grid(row=3, column=3, padx=PADX, pady=PADY, ipadx=50, sticky=W)
-
-    expiration_lbl = Label(wrapper3, text="Expiration")
-    expiration_lbl.grid(row=2, column=4, padx=PADX, pady=PADY)
-    expiration_ent = Entry(wrapper3, textvariable=expiration_sel)
-    expiration_ent.grid(row=3, column=4, padx=PADX, pady=PADY, sticky=W)
-
-
-    update_btn = Button(wrapper3, text="Update", command=update_element)
-    add_btn = Button(wrapper3, text="Add New", command=add_new_element)
-    delete_btn = Button(wrapper3, text="Delete", command=delete_element)
-    pick_btn = Button(wrapper3, text="Pick", command=pick_element)
-
-    add_btn.grid(row=5, column=0, padx=5, pady=3, sticky=W)
-    update_btn.grid(row=5, column=1, padx=5, pady=3, sticky=W)
-    delete_btn.grid(row=5, column=2, padx=5, pady=3, sticky=W)
-    pick_btn.grid(row=5, column=3, padx=5, pady=3, sticky=W)
-
-    search()
-
-set_search_section()
-set_data_selection_section()
+search()
 
 root.title("Picking")
 root.geometry("1080x720+50+50")

@@ -32,6 +32,8 @@ import psycopg2
 #from functions import *
 #from sql_functions import select_command
 from datetime import datetime
+from ttkwidgets.autocomplete import AutocompleteCombobox
+
 from tkcalendar import Calendar
 
 pd.set_option('display.max_rows', None)

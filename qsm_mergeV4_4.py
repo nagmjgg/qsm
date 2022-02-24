@@ -234,33 +234,6 @@ data['lot'] = ""
 extract_text_to_new_column(data,'tracking','lot','Lot',6,20)
 extract_text_to_new_column(data,'tracking','expiration','ExpDate',9,10)
 
-'''
-
-print(f"expiration column ...")
-for i in data.index:
-    #print(data['tracking'][i])
-    if not pd.isna(data['tracking'][i]):
-        if 'ExpDate' in data['tracking'][i]:
-            print(f"i: {i}, {data['tracking'][i]}")
-            data['expiration'][i] = data['tracking'][i][9:19]
-            #print(f"expiration : {data['tracking'][i][9:19]}")
-        else:
-            pass
-
-
-# *** Fill expiration column
-print(f"expiration column ...")
-for i in data.index:
-    #print(data['tracking'][i])
-    if not pd.isna(data['tracking'][i]):
-        if 'ExpDate' in data['tracking'][i]:
-            print(f"i: {i}, {data['tracking'][i]}")
-            data['expiration'][i] = data['tracking'][i][9:19]
-            #print(f"expiration : {data['tracking'][i][9:19]}")
-        else:
-            pass
-
-'''
 #****** create column available *******
 
 data["available"] = 0
@@ -321,17 +294,8 @@ inventory_availability = pd.DataFrame()
 print("")
 print('***** Inventory availability ******') 
 
-'''
-#ask for the initial file
-Tk().withdraw() # we don't want a full GUI, so keep the root window from appearing
-print("** inventory_availability File ** >> Open file in progress")
-filename = askopenfilename() # show an "Open" dialog box and return the path to the selected file
-print(filename)
-'''
-
 initial_filename_available = find_last_file('D:/shared_inventory/server files/','available')
 print(f"opening file > {initial_filename_available}")
-
 
 try:
     inventory_availability = pd.read_csv(initial_filename_available, encoding='latin1',header=3)
@@ -377,20 +341,6 @@ inventory_availability.columns = inventory_availability_columns
 
 inventory_availability
 inventory_availability["Commited_flag"]=0
-
-
-
-'''
-for i in inventory_availability.index:
-    #print(i)
-    print(data["Location"][i])
-    if inventory_availability["Committed"][i] > 0:
-        inventory_availability["Commited_flag"][i]=1
-    else:
-        pass
-print("Active location flag  ok")
-
-'''
 
 
 #**********************************************
