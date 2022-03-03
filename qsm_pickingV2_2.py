@@ -1,19 +1,13 @@
 """
 Program to organize the picking process
-
 Resources:
 https://www.youtube.com/watch?v=i4qLI9lmkqw
-
 Programa con marcos  y formulario con consulta a base de datos
-
 #grids
 https://pythonguides.com/python-tkinter-grid/
-
 using Database norms
-
 V2 Start using Mysql database
 v2.2 stable version
-
 """
 import csv
 import subprocess
@@ -27,11 +21,13 @@ import datetime
 import os
 import pandas as pd
 #from pandastable import Table
-import psycopg2
+#import psycopg2
 #import glob    #func last_filename
 #from functions import *
 #from sql_functions import select_command
 from datetime import datetime
+from ttkwidgets.autocomplete import AutocompleteCombobox
+
 from tkcalendar import Calendar
 
 pd.set_option('display.max_rows', None)
@@ -61,8 +57,13 @@ else:
 #Creating a cursor object using the cursor() method
 cursor = conn.cursor(buffered=True)
 
-font_columns_name = ('Arial',10,'bold') # normal or bold
+#Fonts
+font_columns_name = ('Arial',12,'bold') # normal or bold
 font_wrap_title = ('Arial',12,'bold') # normal or bold
+font_entry = ('Arial',11,'normal') # normal or bold
+font_label = ('Arial',11,'bold') # normal or bold
+font_button = ('Arial',11,'bold') # normal or bold
+font_main_title = ('Arial',18,'bold') # normal or bold
 
 #fixed value for logging porpuses
 script_name = ""
@@ -233,15 +234,13 @@ def modify_picking_data():
     subprocess.call("qsm_modify_picking_dataV1.py", shell=True)
 
 def modify_jobs_data():
-    subprocess.call("qsm_modify_jobs V1.py", shell=True)
+    subprocess.call("qsm_modify_picking_jobsV3_1.py", shell=True)
 
 def query_to_dataframe(conn, query, column_names):
    """
    turn query data to dataframe so it can be used for combobox or vlookup functions
-
    #df = postgresql_to_dataframe(conn, "select * from MonthlyTemp", column_names)
    #column_names = ["id", "source", "datetime", "mean_temp"]
-
    https://naysan.ca/2020/05/31/postgresql-to-pandas/
    Tranform a SELECT query into a pandas dataframe
    """
@@ -280,7 +279,6 @@ def new_job_name(event=None):
 def new_pick_id_job(event=None):
     """
         Identify the new identifier for "Picking_Job_Id" for the specific job
-
     """
     query = "select id from picking_jobs where creation_date = '" + creation_date_job.get() + \
             "' and creation_time = '" + creation_time_job.get() + "' and job_number = '" + job_number_job.get() + "'"
@@ -454,38 +452,36 @@ auto_job_name = StringVar()
 q = StringVar()
 
 
-
-
 #Entry state = "normal", "disabled", or "readonly"
-pick_id_lbl_job = Label(wrapper0, text="Pick id")
+pick_id_lbl_job = Label(wrapper0, text="Pick id", font=font_label)
 pick_id_lbl_job.grid(row=0, column=0, padx=PADX, pady=PADY)
 pick_id_ent_job = Entry(wrapper0, textvariable=pick_id_job, state="normal")
 pick_id_ent_job.grid(row=1, column=0, padx=PADX, pady=PADY, sticky=W)
 #pick_id_ent_job.insert(END,pick_id_new)
 
-creation_date_lbl_job = Label(wrapper0, text="Creation date")
+creation_date_lbl_job = Label(wrapper0, text="Creation date", font=font_label)
 creation_date_lbl_job.grid(row=0, column=1, padx=PADX, pady=PADY)
 creation_date_ent_job = DateEntry(wrapper0, selectmode='day', textvariable=creation_date_job, locale='en_US', date_pattern='yyyy-MM-dd')
 creation_date_ent_job.grid(row=1, column=1, padx=PADX, pady=PADY, sticky=W)
 
-time_lbl_job = Label(wrapper0, text="Creation time")
+time_lbl_job = Label(wrapper0, text="Creation time", font=font_label)
 time_lbl_job.grid(row=0, column=2, padx=PADX, pady=PADY)
 time_ent_job = Entry(wrapper0, textvariable=creation_time_job)
 time_ent_job.grid(row=1, column=2, padx=PADX,pady=PADY, sticky=W)
 time_ent_job.insert(END, time_now())
 
-job_number_lbl_job = Label(wrapper0, text="Job Number")
+job_number_lbl_job = Label(wrapper0, text="Job Number", font=font_label)
 job_number_lbl_job.grid(row=0, column=3, padx=PADX, pady=PADY)
 job_number_ent_job = Entry(wrapper0, textvariable=job_number_job, validate='focusout', validatecommand=new_job_name)
 job_number_ent_job.grid(row=1, column=3, padx=PADX, pady=PADY, sticky=W)
 job_number_ent_job.bind('<Return>',new_job_name)
 
-product_name_lbl_job = Label(wrapper0, text="Product Name")
+product_name_lbl_job = Label(wrapper0, text="Product Name", font=font_label)
 product_name_lbl_job.grid(row=0, column=4, padx=PADX, pady=PADY)
 product_name_ent_job = Entry(wrapper0, textvariable=product_name_job)
 product_name_ent_job.grid(row=1, column=4, padx=PADX, pady=PADY, ipadx=100)
 
-received_by_lbl_job = Label(wrapper0, text="Received by")
+received_by_lbl_job = Label(wrapper0, text="Received by", font=font_label)
 received_by_lbl_job.grid(row=2, column=3, padx=PADX, pady=PADY)
 received_by_ent_job = ttk.Combobox(wrapper0, textvariable=received_by_job,
                                values=["Rafael",
@@ -494,7 +490,7 @@ received_by_ent_job = ttk.Combobox(wrapper0, textvariable=received_by_job,
                                        "Silvia"])
 received_by_ent_job.grid(row=2, column=4, padx=PADX, pady=PADY, ipadx=100)
 
-delivered_by_lbl_job = Label(wrapper0, text="Delivered by")
+delivered_by_lbl_job = Label(wrapper0, text="Delivered by", font=font_label)
 delivered_by_lbl_job.grid(row=3, column=3, padx=PADX, pady=PADY)
 delivered_by_ent_job = ttk.Combobox(wrapper0, textvariable=delivered_by_job,
                              values=["Juan Ruiz",
@@ -503,7 +499,7 @@ delivered_by_ent_job = ttk.Combobox(wrapper0, textvariable=delivered_by_job,
                              )
 delivered_by_ent_job.grid(row=3, column=4, padx=PADX, pady=PADY, ipadx=100)
 
-destination_lbl_job = Label(wrapper0, text="Destination")
+destination_lbl_job = Label(wrapper0, text="Destination", font=font_label)
 destination_lbl_job.grid(row=4, column=3, padx=PADX, pady=PADY)
 destination_ent_job = ttk.Combobox(wrapper0, textvariable=destination_job,
                                    values=["Weight",
@@ -515,15 +511,15 @@ destination_ent_job = ttk.Combobox(wrapper0, textvariable=destination_job,
 
 destination_ent_job.grid(row=4, column=4, padx=PADX, pady=PADY, ipadx=100, sticky=W)
 
-comments_lbl_job = Label(wrapper0, text="Comments")
+comments_lbl_job = Label(wrapper0, text="Comments", font=font_label)
 comments_lbl_job.grid(row=5, column=3, padx=PADX, pady=PADY)
 comments_ent_job = Entry(wrapper0, textvariable=comments_job)
 comments_ent_job.grid(row=5, column=4, padx=PADX, pady=PADY, ipadx=100, sticky=W)
 
-delivered_flag_ent_job = Checkbutton(wrapper0, text="Delivered ?", variable=delivered_flag_job)
+delivered_flag_ent_job = Checkbutton(wrapper0, text="Delivered ?", variable=delivered_flag_job, font=font_label)
 delivered_flag_ent_job.grid(row=2, column=0, padx=PADX, pady=PADY, sticky=W)
 
-delivery_date_lbl_job = Label(wrapper0, text="Delivery_date")
+delivery_date_lbl_job = Label(wrapper0, text="Delivery_date", font=font_label)
 delivery_date_lbl_job.grid(row=2, column=1, padx=PADX, pady=PADY)
 #delivery_date_ent_job = Entry(wrapper0, textvariable=delivery_date_job)
 delivery_date_ent_job = DateEntry(wrapper0, selectmode='day', textvariable=delivery_date_job, locale='en_US', date_pattern='yyyy-MM-dd')
@@ -532,13 +528,13 @@ delivery_date_ent_job.delete(0,END)
 delivery_date_ent_job.insert(0,'2000-01-01')
 
 
-moved_flag_ent_job = Checkbutton(wrapper0, text="Moved in FB ?", variable=moved_flag_job)
+moved_flag_ent_job = Checkbutton(wrapper0, text="Moved in FB ?", variable=moved_flag_job, font=font_label)
 moved_flag_ent_job.grid(row=3, column=0, padx=PADX, pady=PADY, sticky=W)
 
-returned_flag_ent_job = Checkbutton(wrapper0, text="Returned ?", variable=returned_flag_job)
+returned_flag_ent_job = Checkbutton(wrapper0, text="Returned ?", variable=returned_flag_job, font=font_label)
 returned_flag_ent_job.grid(row=4, column=0, padx=PADX, pady=PADY, sticky=W)
 
-return_date_lbl_job = Label(wrapper0, text="Return date")
+return_date_lbl_job = Label(wrapper0, text="Return date", font=font_label)
 return_date_lbl_job.grid(row=4, column=1, padx=PADX, pady=PADY)
 return_date_ent_job = DateEntry(wrapper0, selectmode='day', textvariable=returned_date_job, locale='en_US', date_pattern='yyyy-MM-dd')
 return_date_ent_job.grid(row=4, column=2, padx=PADX, pady=PADY)
@@ -590,37 +586,37 @@ expiration_sel = StringVar()
 def set_data_selection_section():
 
 
-    id_lbl = Label(wrapper3, text="Id")
+    id_lbl = Label(wrapper3, text="Id", font=font_label)
     id_lbl.grid(row=0, column=0, padx=PADX, pady=PADY, ipadx=2)
     id_ent = Entry(wrapper3, textvariable=id_sel)
     id_ent.grid(row=1, column=0, padx=PADX, pady=PADY, sticky=W)
 
-    part_number_lbl = Label(wrapper3, text="Part number")
+    part_number_lbl = Label(wrapper3, text="Part number", font=font_label)
     part_number_lbl.grid(row=0, column=1,padx=PADX, pady=PADY)
     part_number_ent = Entry(wrapper3, textvariable=part_number_sel)
     part_number_ent.grid(row=1, column=1, padx=PADX, pady=PADY, sticky=W)
 
-    description_lbl = Label(wrapper3, text="Description")
+    description_lbl = Label(wrapper3, text="Description", font=font_label)
     description_lbl.grid(row=0, column=2, padx=PADX, pady=PADY)
     description_ent = Entry(wrapper3, textvariable=description_sel)
     description_ent.grid(row=1, column=2, padx=PADX, pady=PADY, ipadx=120, sticky=W)
 
-    location_lbl = Label(wrapper3, text="Location")
+    location_lbl = Label(wrapper3, text="Location", font=font_label)
     location_lbl.grid(row=0, column=3, padx=PADX, pady=PADY)
     location_ent = Entry(wrapper3, textvariable=location_sel)
     location_ent.grid(row=1, column=3, padx=PADX, pady=PADY, ipadx=50, sticky=W)
 
-    qty_lbl = Label(wrapper3, text="Qty")
+    qty_lbl = Label(wrapper3, text="Qty", font=font_label)
     qty_lbl.grid(row=0, column=4, padx=PADX, pady=PADY)
     qty_ent = Entry(wrapper3, textvariable=qty_sel)
     qty_ent.grid(row=1, column=4, padx=PADX, pady=PADY, sticky=W)
 
-    lot_lbl = Label(wrapper3, text="Lot")
+    lot_lbl = Label(wrapper3, text="Lot", font=font_label)
     lot_lbl.grid(row=2, column=3, padx=PADX, pady=PADY)
     lot_ent = Entry(wrapper3, textvariable=lot_sel)
     lot_ent.grid(row=3, column=3, padx=PADX, pady=PADY, ipadx=50, sticky=W)
 
-    expiration_lbl = Label(wrapper3, text="Expiration")
+    expiration_lbl = Label(wrapper3, text="Expiration", font=font_label)
     expiration_lbl.grid(row=2, column=4, padx=PADX, pady=PADY)
     expiration_ent = Entry(wrapper3, textvariable=expiration_sel)
     expiration_ent.grid(row=3, column=4, padx=PADX, pady=PADY, sticky=W)
@@ -644,4 +640,3 @@ set_data_selection_section()
 root.title("Picking")
 root.geometry("1080x720+50+50")
 root.mainloop()
-

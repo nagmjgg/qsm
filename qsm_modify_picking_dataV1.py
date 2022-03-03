@@ -6,6 +6,8 @@ Programa con marcos  y formulario con consulta a base de datos
 #grids
 https://pythonguides.com/python-tkinter-grid/
 
+This Obsolete version not working because of change of database server
+
 """
 
 import psycopg2
@@ -16,7 +18,7 @@ from tkinter import messagebox
 import os
 import pandas as pd
 from pandastable import Table
-#import psycopg2
+import psycopg2
 import glob    #func last_filename
 
 pd.set_option('display.max_rows', None)
@@ -38,18 +40,8 @@ conn = psycopg2.connect(database=db_name, user=username, password=user_password,
 #Creating a cursor object using the cursor() method
 cursor = conn.cursor()
 
-
-
-"""
-#establishing the connection
-conn = psycopg2.connect(database=db_name, user=username, password=user_password, host=db_host, port= db_port)
-
-#Creating a cursor object using the cursor() method
-cursor = conn.cursor()
-"""
-
 def clear():
-    query = "select index, part_number, description_x, location, qty, lot from onhand_ingredients"
+    query = "select id, creation_date, delivery_date, creation_time, job_number, product_name, received_by, delivered_by, delivered_flag, moved_flag, returned_flag, return_date, comments, destination  from picking_jobs"
     cursor.execute(query)
     rows = cursor.fetchall()
     update(rows)
@@ -57,15 +49,12 @@ def clear():
 def getrow(event):
     rowid = trv.identify_row(event.y)
     item = trv.item(trv.focus())
-    t1.set(item['values'][0])
-    t2.set(item['values'][1])
-    t3.set(item['values'][2])
-    t4.set(item['values'][3])
-    t5.set(item['values'][4])
-    t6.set(item['values'][5])
+    columns = 14
+    for col in range(0,columns):
+        t[col].set(item['values'][col])
 
 def update_element():
-    index = t1.get()
+    pick_id = t1.get()
     part_number = t2.get()
     description = t3.get()
     location = t4.get()
@@ -73,31 +62,49 @@ def update_element():
     lot = t6.get()
 
     if messagebox.askyesno("confirm ?","Are you sure you want to update this element?"):
-        query = "update onhand_ingredients set index = %s, part_number = %s, description_x = %s, location = %s, " \
-                "qty = %s, lot = %s where  index = %s"
-        cursor.execute(query, (index, part_number, description, location, qty, lot, index))
+        query = "update picking_data set pick_id = %s, part_number = %s, part_description = %s, location = %s, " \
+                "qty = %s, part_lot = %s where  pick_id = %s"
+        cursor.execute(query, (pick_id, part_number, description, location, qty, lot, pick_id))
         conn.commit()
         clear()
     else:
         return True
 
 def add_new_element():
-    index = t1.get()
+
+    pick_id = t1.get()
     part_number = t2.get()
     description = t3.get()
     location = t4.get()
     qty = t5.get()
     lot = t6.get()
 
-    query = "insert into onhand_ingredients (index, part_number, description_x, location, qty, lot) values(%s, %s, %s, %s, %s, %s)"
-    cursor.execute(query, (index, part_number, description, location, qty, lot))
+    query2 = "select max(index) from picking_data"
+    cursor.execute(query2,(pick_id))
+    max_index = cursor.fetchone()
+    print(max_index)
+
+    new_index = int(max_index[0]) + 1
+    print(new_index)
+
+    query = "insert into picking_data (pick_id, part_number, part_description, location, qty, part_lot) values(%s, %s, %s, %s, %s, %s)"
+    cursor.execute(query, (new_index, part_number, description, location, qty, part_lot))
     conn.commit()
     clear()
 
 def delete_element():
+    pick_id = t1.get()
+    part_number = t2.get()
+    description = t3.get()
+    location = t4.get()
+    qty = t5.get()
+    lot = t6.get()
+
     ingredient_id = t1.get()
-    if messagebox.askyesno("confirm Delete ?","Are you sure you want to delete this customer?"):
-        query = "select index, part_number, description_x, location, qty, lot from onhand_ingredients"
+    if messagebox.askyesno("confirm Delete ?","Are you sure you want to delete this element?"):
+        query = "delete from picking_data where pick_id = " + pick_id + " and part_number = '" + part_number + \
+                "' and part_description = '" + description + "' and location = '" + location + "' and qty = '" + qty + "' and part_lot = '" + lot + \
+                "'"
         cursor.execute(query)
         conn.commit()
         clear()
@@ -111,7 +118,7 @@ def update(rows):
 
 def search():
     q2 = q.get()
-    query = "select index, part_number, description_x, location, qty, lot from onhand_ingredients where part_number like '%"+q2+"%' or description_x like '%"+q2+"%'"
+    query = "select pick_id, part_number, part_description, location, qty, part_lot from picking_data where part_number like '%"+q2+"%' or part_description like '%"+q2+"%'"
     cursor.execute(query)
     rows = cursor.fetchall()
     update(rows)
@@ -129,13 +136,13 @@ t6 = StringVar()
 
 wrapper1 = LabelFrame(root, text="Database")
 wrapper2 = LabelFrame(root, text="Search")
-#wrapper3 = LabelFrame(root, text="Selection")
+wrapper3 = LabelFrame(root, text="Selection")
 
 wrapper1.pack(fill="both", expand="yes", padx=10, pady=10)
 wrapper2.pack(fill="both", expand="yes", padx=10, pady=10)
-#wrapper3.pack(fill="both", expand="yes", padx=10, pady=10)
+wrapper3.pack(fill="both", expand="yes", padx=10, pady=10)
 
-trv = ttk.Treeview(wrapper1, columns=(1,2,3,4,5,6), show="headings", height="15")
+trv = ttk.Treeview(wrapper1, columns=(1,2,3,4,5,6), show="headings", height="10")
 
 verscrlbar = ttk.Scrollbar(wrapper1, orient="vertical", command=trv.yview)
 verscrlbar.pack(side="right", fill="y")
@@ -149,7 +156,7 @@ trv.column(5,width=100)
 trv.column(6,width=200)
 trv.pack()
 #index, 'part_number','location','expiration','qty', 'lot'
-trv.heading(1, text="index")
+trv.heading(1, text="pick_id")
 trv.heading(2, text="part_number")
 trv.heading(3, text="Description")
 trv.heading(4, text="Location")
@@ -158,7 +165,7 @@ trv.heading(6, text="Lot")
 
 trv.bind('<Double 1>', getrow)
 
-query = "select index, part_number, description_x, location, qty, lot from onhand_ingredients"
+query = "select pick_id, part_number, part_description, location, qty, part_lot from picking_data"
 cursor.execute(query)
 rows = cursor.fetchall()
 update(rows)
@@ -173,9 +180,8 @@ btn.pack(side=tk.LEFT, padx=6)
 cbtn = Button(wrapper2, text="Clear", command=clear)
 cbtn.pack(side=tk.LEFT, padx=6)
 
-"""
 #user data section
-lbl0 = Label(wrapper3, text="Index")
+lbl0 = Label(wrapper3, text="pick_id")
 lbl0.grid(row=0, column=0, padx=5, pady=3)
 ent0 = Entry(wrapper3, textvariable=t1)
 ent0.grid(row=0, column=1, padx=5, pady=3, sticky='w')
@@ -208,9 +214,26 @@ add_btn.grid(row=5, column=0, padx=5, pady=3)
 up_btn.grid(row=5, column=1, padx=5, pady=3)
 delete_btn.grid(row=5, column=2, padx=5, pady=3)
 
-"""
 
-root.title("Consult Elements")
-root.geometry("1080x500")
+"""
+trv.bind('<Double 1>', getrow)
+
+query = "select ..."
+cursor.execute(query)
+rows = cursor.fetchall()
+update(rows)
+
+#search selection
+lbl = Label(wrapper2, text="search")
+lbl.pack(side=tk.LEFT, padx=10)
+ent = Entry(wrapper2, textvariable=q)
+ent.pack(side=tk.LEFT, padx=6)
+btn = Button(wrapper2, text="search", command=search)
+ent.pack(side=tk.LEFT, padx=6)
+cbtn = Button(wrapper2, text="clear", command=clear)
+cbtn.pack(side=tk.LEFT, padx=6)
+"""
+root.title("QSM Modify Picking Jobs")
+root.geometry("1080x720")
 root.mainloop()
 

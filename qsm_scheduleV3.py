@@ -4,6 +4,7 @@ https://schedule.readthedocs.io/en/stable/
 
 Remember to install pandas in current
 V3 Logging to mysql implemented
+    update parts 3/2/22
 
 """
 
@@ -60,6 +61,12 @@ def qsm_merge():
     subprocess.call(["python","qsm_mergeV4_3.py"])
     log("qsm_merge ok","info")
 
+def update_parts():
+    print("Updating Parts...")
+    subprocess.call(["python","qsm_update_parts V1.py"])
+    log("'parts' updated ok","info")
+
+
 # Task scheduling
 # After every 10mins geeks() is called.
 #schedule.every(10).minutes.do(geeks)
@@ -83,6 +90,9 @@ def qsm_merge():
 
 # Every day at 7 am or 00:00 time bedtime() is called.
 schedule.every().day.at("07:10").do(qsm_merge)
+
+# Every day at 7 am or 00:00 time bedtime() is called.
+schedule.every().day.at("07:10").do(update_parts)
 
 # Every day at 9 am or 00:00 time bedtime() is called.
 schedule.every().day.at("09:10").do(qsm_merge)
