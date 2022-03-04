@@ -4,6 +4,7 @@ https://schedule.readthedocs.io/en/stable/
 
 Remember to install pandas in current
 V3 Logging to mysql implemented
+    update parts 3/2/22
 
 """
 
@@ -60,6 +61,17 @@ def qsm_merge():
     subprocess.call(["python","qsm_mergeV4_3.py"])
     log("qsm_merge ok","info")
 
+def update_table_parts():
+    print("Updating Parts...")
+    subprocess.call(["python","qsm_update_parts V1.py"])
+    log("'parts' updated ok","info")
+
+def update_table_onhand_ingredients():
+    print("Updating Parts...")
+    subprocess.call(["python","qsm_update_onhand_ingredients V1.py"])
+    log("'onhand_ingredients' updated ok","info")
+
+
 # Task scheduling
 # After every 10mins geeks() is called.
 #schedule.every(10).minutes.do(geeks)
@@ -81,34 +93,48 @@ def qsm_merge():
 
 
 
-# Every day at 7 am or 00:00 time bedtime() is called.
+# Every day at 7 am or 00:00 time
 schedule.every().day.at("07:10").do(qsm_merge)
 
-# Every day at 9 am or 00:00 time bedtime() is called.
+# Every day at 7 am or 00:00 time
+schedule.every().day.at("07:10").do(update_table_parts)
+
+# Every day at 7 am or 00:00 time
+schedule.every().day.at("07:10").do(update_table_onhand_ingredients)
+
+
+# Every day at 9 am or 00:00 time
 schedule.every().day.at("09:10").do(qsm_merge)
 
-# Every day at 11 am or 00:00 time bedtime() is called.
+# Every day at 11 am or 00:00 time
 schedule.every().day.at("11:10").do(qsm_merge)
 
-# Every day at 2 pm or 00:00 time bedtime() is called.
+# Every day at 2 pm or 00:00 time
 schedule.every().day.at("14:10").do(qsm_merge)
 
-# Every day at 2 pm or 00:00 time bedtime() is called.
+# Every day at 2 pm or 00:00 time
+schedule.every().day.at("14:10").do(update_table_parts)
+
+# Every day at 2 pm or 00:00 time
+schedule.every().day.at("14:10").do(update_table_onhand_ingredients)
+
+
+# Every day at 2 pm or 00:00 time
 schedule.every().day.at("07:18").do(qsm_merge)
 
-# Every day at 7am or 00:00 time bedtime() is called.
+# Every day at 7am or 00:00 time
 schedule.every().day.at("07:10").do(update_table_combined_inventory)
 
-# Every day at 9am or 00:00 time bedtime() is called.
+# Every day at 9am or 00:00 time
 schedule.every().day.at("09:10").do(update_table_combined_inventory)
 
-# Every day at 11 am or 00:00 time bedtime() is called.
+# Every day at 11 am or 00:00 time
 schedule.every().day.at("11:10").do(update_table_combined_inventory)
 
-# Every day at 2 pm or 00:00 time bedtime() is called.
+# Every day at 2 pm or 00:00 time
 schedule.every().day.at("14:10").do(update_table_combined_inventory)
 
-# Every day at 7am or 00:00 time bedtime() is called.
+# Every day at 7am or 00:00 time
 schedule.every().day.at("07:18").do(update_table_combined_inventory)
 
 # Loop so that the scheduling task
