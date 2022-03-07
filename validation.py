@@ -21,6 +21,8 @@ def validation():
                 msg = 'Atleast 1 lowercase character required!'
             elif not any(ch.isdigit() for ch in password):
                 msg = 'Atleast 1 number required!'
+            elif not any(ch.isalpha() for ch in password):
+                msg = 'Only letters, Atleast 1 number required!'
             elif len(password) < 8:
                 msg = 'Password must be minimum of 8 characters!'
             else:
